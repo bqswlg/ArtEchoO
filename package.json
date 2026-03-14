@@ -1,6 +1,7 @@
 {
   "name": "artecho-backend",
   "version": "1.0.0",
+  "type": "module",
   "description": "簡易驗證碼後端 (for ArtEcho)",
   "main": "api/index.js",
   "scripts": {
