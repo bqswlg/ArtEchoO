@@ -86,7 +86,7 @@
   </div>
 
   <script>
-    const registerBtn = document.getElementById('registerBtn');
+    /*const registerBtn = document.getElementById('registerBtn');
     const clearBtn = document.getElementById('clearBtn');
     const emailInput = document.getElementById('email');
     const displayInput = document.getElementById('displayName');
@@ -144,6 +144,61 @@
 
     clearBtn.addEventListener('click', () => {
       emailInput.value = ''; displayInput.value = ''; pwInput.value = ''; confirmInput.value = ''; phoneInput.value = ''; formMsg.textContent = '';
+      emailInput.focus();
+    });*/
+    const registerBtn = document.getElementById('registerBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const emailInput = document.getElementById('email');
+    const pwInput = document.getElementById('password');
+    const confirmInput = document.getElementById('confirmPassword');
+    const formMsg = document.getElementById('form-msg');
+
+    // 簡單的電子郵件格式檢查
+    function validateEmail(email) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    registerBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      formMsg.textContent = '';
+
+      const email = emailInput.value.trim();
+      const pw = pwInput.value;
+      const confirmPw = confirmInput.value;
+
+      // 🌟 基本必填檢查
+      if (!email || !validateEmail(email)) {
+        formMsg.textContent = '請輸入有效的電子郵件。';
+        emailInput.focus();
+        return;
+      }
+      if (!pw || pw.length < 8) {
+        formMsg.textContent = '密碼需至少 8 碼。';
+        pwInput.focus();
+        return;
+      }
+      if (pw !== confirmPw) {
+        formMsg.textContent = '兩次密碼輸入不一致。';
+        confirmInput.focus();
+        return;
+      }
+
+      // 🌟 註冊成功提示並直接跳轉
+      formMsg.style.color = 'var(--moss)';
+      formMsg.textContent = '註冊完成！正在導向登入頁面...';
+
+      // 延遲一小段時間讓使用者看見提示後再跳轉
+      setTimeout(() => {
+        window.location.href = 'login.html';
+      }, 800);
+    });
+
+    clearBtn.addEventListener('click', () => {
+      emailInput.value = '';
+      document.getElementById('displayName').value = '';
+      pwInput.value = '';
+      confirmInput.value = '';
+      formMsg.textContent = '';
       emailInput.focus();
     });
   </script>
