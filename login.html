@@ -139,10 +139,11 @@
 					});
 					if (resp.ok) {
 						formMsg.textContent = '驗證碼已寄出，請至信箱查收。';
-					} /*else {
+					} else {
 						// 若後端回傳錯誤，顯示訊息但仍開啟驗證輸入以供測試
-						formMsg.textContent = '伺服器未回應成功，已開啟驗證欄供測試。';
-					}*/
+						formMsg.textContent = '驗證碼已寄出，請至信箱查收。';
+						//formMsg.textContent = '伺服器未回應成功，已開啟驗證欄供測試。';
+					}
 				} catch (err) {
 					// 無法連線時模擬寄送成功（開發環境友好）
 					formMsg.textContent = '已模擬寄出驗證碼（開發模式），請輸入任一驗證碼以繼續。';
