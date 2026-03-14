@@ -32,7 +32,7 @@ export default async function handler(req, res) {
     contents.push({ role: "user", parts: [{ text: finalUserText }] });
 
     try {
-        const apiURL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${apiKey}`;
+        const apiURL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
         const response = await fetch(apiURL, {
             method: 'POST',
