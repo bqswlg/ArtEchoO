@@ -6,7 +6,7 @@ export default async function handler(req, res) {
     }
 
     // 2. 從 Vercel 後台抓取環境變數
-    const apiKey = process.env.VITE_GEMINI_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
         return res.status(500).json({ error: '伺服器未設定 API KEY' });
