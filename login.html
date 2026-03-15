@@ -141,8 +141,7 @@
 						formMsg.textContent = '驗證碼已寄出，請至信箱查收。';
 					} else {
 						// 若後端回傳錯誤，顯示訊息但仍開啟驗證輸入以供測試
-						formMsg.textContent = '驗證碼已寄出，請至信箱查收。';
-						//formMsg.textContent = '伺服器未回應成功，已開啟驗證欄供測試。';
+						formMsg.textContent = '伺服器未回應成功，已開啟驗證欄供測試。';
 					}
 				} catch (err) {
 					// 無法連線時模擬寄送成功（開發環境友好）
@@ -179,12 +178,9 @@
 						// 若後端回傳導向位置，可在此處處理
 						setTimeout(() => { window.location.href = 'index.html'; }, 900);
 					} else {
-						formMsg.textContent = '登入成功，正在跳轉...';
-						// 若後端回傳導向位置，可在此處處理
-						setTimeout(() => { window.location.href = 'index.html'; }, 900);
-						/*formMsg.textContent = '登入失敗：驗證碼或帳密錯誤。';
+						formMsg.textContent = '登入失敗：驗證碼或帳密錯誤。';
 						actionBtn.disabled = false;
-						actionBtn.textContent = '登入';*/
+						actionBtn.textContent = '登入';
 					}
 				} catch (err) {
 					// 模擬成功登入（開發模式）
