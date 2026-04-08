@@ -48,24 +48,77 @@ const cloudSimulationWorks = [
 ];
 
 const LIKE_STORAGE_KEY = "artEchoCloudLikes";
-let currentAllWorks = [];
+let currentFilterTag = '全部';
 
-// 取得與儲存 Local按讚數
+function injectCloudActionStyles() {
+    if (document.getElementById('cloud-share-style')) return;
+
+    const style = document.createElement('style');
+    style.id = 'cloud-share-style';
+    style.textContent = `
+        .cloud-actions {
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:10px;
+            margin-top:10px;
+        }
+        .share-btn {
+            border:none;
+            border-radius:999px;
+            padding:8px 12px;
+            font-size:0.85rem;
+            cursor:pointer;
+            background:#eef3f1;
+            color:#2f5d4f;
+            transition:.2s ease;
+        }
+        .share-btn:hover {
+            transform:translateY(-1px);
+        }
+        .share-btn.active {
+            background:#2f5d4f;
+            color:#fff;
+        }
+        .share-status {
+            font-size:0.82rem;
+            color:#6f7c79;
+        }
+        .cloud-empty {
+            grid-column:1 / -1;
+            text-align:center;
+            padding:48px 16px;
+            color:#6f7c79;
+            background:rgba(255,255,255,0.55);
+            border-radius:20px;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
 function getLikeData() {
     const raw = localStorage.getItem(LIKE_STORAGE_KEY);
     return raw ? JSON.parse(raw) : {};
 }
+
 function saveLikeData(data) {
     localStorage.setItem(LIKE_STORAGE_KEY, JSON.stringify(data));
+}
+
+function ensureLikeRecord(likeData, workId, min = 5, span = 40) {
+    if (!likeData[workId]) {
+        likeData[workId] = {
+            count: Math.floor(Math.random() * span) + min,
+            isLiked: false
+        };
+    }
 }
 
 function handleLikeClick(btn, workId) {
     const likeData = getLikeData();
     const countDisplay = btn.querySelector('.like-count');
 
-    if (!likeData[workId]) {
-        likeData[workId] = { count: Math.floor(Math.random() * 50) + 10, isLiked: false };
-    }
+    ensureLikeRecord(likeData, workId, 10, 50);
 
     if (likeData[workId].isLiked) {
         likeData[workId].count--;
@@ -81,73 +134,167 @@ function handleLikeClick(btn, workId) {
     saveLikeData(likeData);
 }
 
+function getMyWorks() {
+    try {
+        return StorageManager.getAllWorks()
+            .map(w => ({
+                id: w.id,
+                src: w.dataUrl,
+                name: w.name || "情緒筆觸",
+                author: "我",
+                storyId: w.storyId || "",
+                storyTitle: w.storyTitle || "",
+                level: w.level,
+                shared: !!w.shared,
+                isMine: true
+            }))
+            .filter(w => w.src);
+    } catch (e) {
+        return [];
+    }
+}
+
 function buildTagBar(hasPersonal) {
     const tagBar = document.getElementById('cloudTags');
     if (!tagBar) return;
-    tagBar.innerHTML = '';
 
+    tagBar.innerHTML = '';
     const tags = ['全部', '公主的等待', '仙度瑞拉的眼淚'];
     if (hasPersonal) tags.push('我的作品');
 
     tags.forEach(tag => {
         const btn = document.createElement('button');
-        btn.className = 'tag-btn' + (tag === '全部' ? ' active' : '');
+        btn.className = 'tag-btn' + (tag === currentFilterTag ? ' active' : '');
         btn.textContent = tag;
         btn.onclick = () => {
+            currentFilterTag = tag;
             document.querySelectorAll('.tag-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            renderCloudGallery(tag);
+            renderCloudGallery(currentFilterTag);
         };
         tagBar.appendChild(btn);
     });
 }
 
+function getWorksForFilter(filterTag) {
+    const myWorks = getMyWorks();
+    const sharedMyWorks = myWorks.filter(w => w.shared);
+
+    if (filterTag === '我的作品') {
+        return myWorks.slice().sort((a, b) => String(b.id).localeCompare(String(a.id)));
+    }
+
+    let works = [...cloudSimulationWorks, ...sharedMyWorks];
+
+    if (filterTag === '全部') {
+        return works.sort(() => Math.random() - 0.5);
+    }
+
+    return works.filter(w => w.storyTitle === filterTag);
+}
+
+function toggleShare(workId, nextShared) {
+    StorageManager.setWorkShared(workId, nextShared);
+    renderCloudGallery(currentFilterTag);
+}
+
+function createCard(work, likeData, isMyWorksTab) {
+    ensureLikeRecord(likeData, work.id, 5, 40);
+
+    const card = document.createElement('div');
+    card.className = 'cloud-item';
+
+    const img = document.createElement('img');
+    img.src = work.src;
+    img.loading = 'lazy';
+    img.alt = work.name || '作品';
+
+    const info = document.createElement('div');
+    info.className = 'cloud-info';
+    info.innerHTML = `
+        <h4>${work.name}</h4>
+        <p>by ${work.author}</p>
+    `;
+
+    const likeBtn = document.createElement('button');
+    likeBtn.className = `like-btn ${likeData[work.id].isLiked ? 'active' : ''}`;
+    likeBtn.innerHTML = `
+        <span class="heart-icon">♥</span>
+        <span class="like-count">${likeData[work.id].count}</span>
+    `;
+    likeBtn.onclick = (e) => {
+        e.stopPropagation();
+        handleLikeClick(likeBtn, work.id);
+    };
+
+    if (isMyWorksTab && work.isMine) {
+        const actions = document.createElement('div');
+        actions.className = 'cloud-actions';
+
+        const shareBtn = document.createElement('button');
+        shareBtn.className = `share-btn ${work.shared ? 'active' : ''}`;
+        shareBtn.textContent = work.shared ? '取消分享' : '分享作品';
+        shareBtn.onclick = (e) => {
+            e.stopPropagation();
+            toggleShare(work.id, !work.shared);
+        };
+
+        const status = document.createElement('span');
+        status.className = 'share-status';
+        status.textContent = work.shared ? '目前狀態：已公開' : '目前狀態：未公開';
+
+        actions.appendChild(shareBtn);
+        actions.appendChild(status);
+
+        card.appendChild(img);
+        card.appendChild(info);
+        card.appendChild(actions);
+        card.appendChild(likeBtn);
+        return card;
+    }
+
+    card.appendChild(img);
+    card.appendChild(info);
+    card.appendChild(likeBtn);
+    return card;
+}
+
 function renderCloudGallery(filterTag = '全部') {
     const cloudGrid = document.getElementById('cloudGrid');
     const likeData = getLikeData();
-
-    // 取得個人作品
-    let myWorks = [];
-    try {
-        myWorks = StorageManager.getAllWorks().map(w => ({
-            id: w.id, src: w.dataUrl, name: w.name || "情緒筆觸", author: "我", storyTitle: w.storyTitle
-        }));
-    } catch(e) {}
-
-    currentAllWorks = [...cloudSimulationWorks, ...myWorks];
-    if (filterTag === '全部') currentAllWorks.sort(() => Math.random() - 0.5);
-
-    let filtered = currentAllWorks;
-    if (filterTag === '我的作品') filtered = currentAllWorks.filter(w => w.author === '我');
-    else if (filterTag !== '全部') filtered = currentAllWorks.filter(w => w.storyTitle === filterTag);
+    const works = getWorksForFilter(filterTag);
 
     cloudGrid.innerHTML = '';
-    filtered.forEach(work => {
-        if (!likeData[work.id]) likeData[work.id] = { count: Math.floor(Math.random() * 40) + 5, isLiked: false };
-        const card = document.createElement('div');
-        card.className = 'cloud-item';
-        card.innerHTML = `
-            <img src="${work.src}" loading="lazy">
-            <div class="cloud-info">
-                <h4>${work.name}</h4>
-                <p>by ${work.author}</p>
+
+    if (works.length === 0) {
+        cloudGrid.innerHTML = `
+            <div class="cloud-empty">
+                <h3 style="margin-bottom:8px;">目前沒有可顯示的作品</h3>
+                <p>${filterTag === '我的作品' ? '你還沒有儲存任何作品。' : '目前這個分類下還沒有已公開的作品。'}</p>
             </div>
-            <button class="like-btn ${likeData[work.id].isLiked ? 'active' : ''}">
-                <span class="heart-icon">♥</span>
-                <span class="like-count">${likeData[work.id].count}</span>
-            </button>
         `;
-        card.querySelector('.like-btn').onclick = (e) => {
-            e.stopPropagation();
-            handleLikeClick(card.querySelector('.like-btn'), work.id);
-        };
+        saveLikeData(likeData);
+        return;
+    }
+
+    const isMyWorksTab = filterTag === '我的作品';
+
+    works.forEach(work => {
+        const card = createCard(work, likeData, isMyWorksTab);
         cloudGrid.appendChild(card);
     });
+
+    saveLikeData(likeData);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    injectCloudActionStyles();
+
     let hasPersonal = false;
-    try { hasPersonal = StorageManager.getAllWorks().length > 0; } catch(e) {}
+    try {
+        hasPersonal = StorageManager.getAllWorks().length > 0;
+    } catch (e) {}
+
     buildTagBar(hasPersonal);
-    renderCloudGallery('全部');
+    renderCloudGallery(currentFilterTag);
 });
