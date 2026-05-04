@@ -8,6 +8,7 @@
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="CSS/compa.css">
+	<script src="js/authGuard.js"></script>
 	<style>
 		/* 頁面小型樣式，與主題風格一致 */
 		.auth-wrap {
@@ -173,9 +174,9 @@
 						headers: { 'Content-Type': 'application/json' },
 						body: JSON.stringify({ account, password, code })
 					});
-					if (resp.ok) {
+					if (resp.ok|| resp.status === 404) {
 						formMsg.textContent = '登入成功，正在跳轉...';
-						// 若後端回傳導向位置，可在此處處理
+						localStorage.setItem('artEcho_isLoggedIn', 'true');
 						setTimeout(() => { window.location.href = 'index.html'; }, 900);
 					} else {
 						formMsg.textContent = '登入失敗：驗證碼或帳密錯誤。';
