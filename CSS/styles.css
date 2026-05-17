@@ -1013,3 +1013,251 @@ svg.hand-drawn {
   .resource-card { flex-direction: column; }
   .resource-poster, .resource-info { width: 100%; }
 }
+
+/* ==========================================================================
+   ArtEcho 多維藝術共生空間 - 首頁內嵌動態畫廊樣式
+   ========================================================================== */
+
+#gallery-zone-wrapper {
+  --primary: #00bcd4;
+  --bg-fish: radial-gradient(circle at 50% 10%, rgba(255,255,255,0.1) 0%, transparent 50%), linear-gradient(180deg, #054d74 0%, #022e47 100%);
+  --bg-butterfly: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.4) 0%, transparent 40%), linear-gradient(135deg, #f1f8e9 0%, #dcedc8 100%);
+  --bg-jellyfish: radial-gradient(circle at 50% 50%, rgba(103,58,183,0.2) 0%, transparent 70%), linear-gradient(180deg, #1a237e 0%, #0d1137 100%);
+}
+
+#selector-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255,255,255,0.98);
+  z-index: 150;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.selector-box {
+  display: flex;
+  gap: 20px;
+}
+
+.selector-box .option {
+  padding: 25px;
+  border-radius: 20px;
+  border: 2px solid #eee;
+  cursor: pointer;
+  text-align: center;
+  width: 120px;
+  background: white;
+  transition: 0.3s;
+  color: #333;
+}
+
+.selector-box .option:hover {
+  border-color: #00bcd4;
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+}
+
+#gallery-nav {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  display: flex;
+  gap: 20px;
+}
+
+.gallery-section .nav-btn {
+  padding: 12px 30px;
+  border-radius: 40px;
+  border: none;
+  background: rgba(255,255,255,0.2);
+  color: white;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  cursor: pointer;
+  transition: 0.3s;
+  border: 1px solid rgba(255,255,255,0.3);
+  font-size: 15px;
+}
+
+.gallery-section .nav-btn:hover {
+  background: rgba(255,255,255,0.3);
+  transform: translateY(-2px);
+}
+
+#drawing-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  z-index: 500;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+#canvas-outer-container {
+  position: relative;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#canvas-scroll-lock {
+  width: 600px;
+  height: 450px;
+  overflow: visible;
+  border-radius: 16px 16px 0 0;
+  background: #fff;
+  position: relative;
+}
+
+#drawCanvas {
+  background: #fff;
+  cursor: crosshair;
+  border-radius: 16px 16px 0 0;
+  width: 600px;
+  height: 450px;
+}
+
+#side-tools {
+  position: absolute;
+  right: -75px;
+  top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  align-items: center;
+}
+
+#side-tools input[type="color"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 50px;
+  height: 50px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+#side-tools input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+#side-tools input[type="color"]::-webkit-color-swatch { border: 4px solid white; border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+#side-tools input[type="color"]::-moz-color-swatch { border: 4px solid white; border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
+.tool-icon {
+  width: 50px;
+  height: 50px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  transition: 0.2s;
+  border: none;
+}
+
+.tool-icon:hover { transform: scale(1.1); }
+.tool-icon.active { background: #00bcd4; color: white; }
+
+.slider-wrapper {
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+}
+
+#sizeSlider {
+  -webkit-appearance: slider-vertical;
+  width: 8px;
+  height: 100px;
+  cursor: pointer;
+}
+
+#drawing-controls {
+  width: 100%;
+  padding: 15px 0;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  background: #f8f9fa;
+  border-top: 1px solid #eee;
+  border-radius: 0 0 16px 16px;
+}
+
+#feedback-toast {
+  position: absolute;
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  background: white;
+  padding: 15px 40px;
+  border-radius: 50px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  opacity: 0;
+  transition: 0.5s;
+  pointer-events: none;
+  font-weight: 500;
+  color: #333;
+}
+
+#feedback-toast.show { opacity: 1; }
+
+#naming-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.8);
+  z-index: 600;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.naming-box {
+  background: white;
+  padding: 40px;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+
+.naming-box input {
+  display: block;
+  width: 250px;
+  padding: 12px;
+  margin: 20px auto;
+  border: 2px solid #eee;
+  border-radius: 10px;
+  font-size: 18px;
+  text-align: center;
+  color: #333;
+}
+
+.naming-box input:focus {
+  border-color: #00bcd4;
+  outline: none;
+}

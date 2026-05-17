@@ -133,6 +133,64 @@
 				</div>
 			</div>
 		</section>
+		<section class="gallery-section reveal delay-4" aria-label="ArtEcho 共生藝術畫廊" style="margin-top: 50px; margin-bottom: 50px; position: relative;">
+			<div class="section-header" style="margin-bottom: 20px;">
+				<h2>ArtEcho 多維藝術共生空間</h2>
+				<p style="color: var(--slate); font-size: 0.95rem; margin-top: 5px;">點擊畫廊內的生物可以觀看牠們的名字，過 5 秒後會自動隱藏</p>
+			</div>
+
+			<div id="gallery-zone-wrapper" style="position: relative; width: 100%; height: 600px; border-radius: 24px; overflow: hidden; box-shadow: var(--shadow-sm); background: #000;">
+
+				<div id="selector-overlay">
+					<h3 style="color: var(--primary); font-weight: 500; margin-bottom: 10px; font-family: 'Noto Serif TC', serif; font-size: 1.8rem;">歡迎來到共生藝術空間</h3>
+					<p style="color: #666; margin-bottom: 25px;">請選擇一個想要欣賞或創作的主題生態系</p>
+					<div class="selector-box">
+						<div class="option" onclick="initGallery('fish')"><span style="font-size: 40px;">🐟</span><br><br><b>靜謐水池</b></div>
+						<div class="option" onclick="initGallery('butterfly')"><span style="font-size: 40px;">🦋</span><br><br><b>花之森林</b></div>
+						<div class="option" onclick="initGallery('jellyfish')"><span style="font-size: 40px;">🪼</span><br><br><b>幻彩深海</b></div>
+					</div>
+				</div>
+
+				<canvas id="ecoCanvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; transition: background 0.8s ease;"></canvas>
+
+				<div id="gallery-nav">
+					<button class="nav-btn" onclick="resetToSelector()">切換主題生態</button>
+					<button class="nav-btn" onclick="openDrawing()" style="background: var(--primary); font-weight: bold; border: none;">＋ 開始創作生物</button>
+				</div>
+			</div>
+
+			<div id="feedback-toast"></div>
+
+			<div id="drawing-overlay">
+				<div id="canvas-outer-container">
+					<div id="canvas-scroll-lock">
+						<canvas id="drawCanvas"></canvas>
+
+						<div id="side-tools">
+							<input type="color" id="colorPicker" value="#333333" title="選擇顏色">
+							<div class="tool-icon" id="eraserBtn" onclick="toggleEraser()" title="橡皮擦">🧽</div>
+							<div class="tool-icon" onclick="undo()" title="復原">↩</div>
+							<div class="slider-wrapper">
+								<input type="range" id="sizeSlider" min="2" max="30" value="8" step="1" title="調整畫筆粗細">
+							</div>
+						</div>
+					</div>
+
+					<div id="drawing-controls">
+						<button class="action-btn btn-cancel" onclick="closeDrawing()">取消</button>
+						<button class="action-btn btn-confirm" onclick="finalize()">賦予生命</button>
+					</div>
+				</div>
+			</div>
+
+			<div id="naming-overlay">
+				<div class="naming-box">
+					<h2 id="naming-title" style="font-family: 'Noto Serif TC', serif; margin: 0 0 10px 0; color: var(--ink);">幫生物取個名字</h2>
+					<input type="text" id="creature-name" placeholder="輸入名字..." maxlength="10">
+					<button class="action-btn btn-confirm" onclick="confirmNaming()">誕生！</button>
+				</div>
+			</div>
+		</section>
 	</main>
 </div>
 
