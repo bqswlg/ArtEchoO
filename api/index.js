@@ -75,3 +75,4 @@ app.post('/api/chat', async (req, res) => {
 // 啟動伺服器
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`🚀 API 伺服器已啟動: http://localhost:${PORT}`));
+
