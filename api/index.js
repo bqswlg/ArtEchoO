@@ -1,78 +1,77 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const nodemailer = require('nodemailer');
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import ModelClient, { isUnexpected } from "@azure-rest/ai-inference";
+import { AzureKeyCredential } from "@azure/core-auth";
+
+dotenv.config();
+
 const app = express();
 
-// CORS 設定：確保網域正確
+// 開發時允許 WebStorm preview 的 origin
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'http://localhost:63342',
+  'http://127.0.0.1:63342'
+];
+
 app.use(cors({
-  origin: 'https://art-echo-o-8ral.vercel.app'
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error('CORS not allowed'), false);
+  }
 }));
 
 app.use(express.json());
 
-// 雖然 Vercel 會清空 Map，但我們留著 send-code 邏輯來寄信
-const store = new Map();
+// 測試用健康檢查路由
+app.get('/api/health', (req, res) => res.json({ ok: true, status: "伺服器運行中" }));
 
-async function createTransporter() {
-  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-    return nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT) || 587,
-      secure: process.env.SMTP_SECURE === 'true',
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
+// 聊天路由
+app.post('/api/chat', async (req, res) => {
+  const token = process.env.GITHUB_TOKEN;
+  const endpoint = process.env.GITHUB_MODELS_BASE_URL || "https://models.github.ai/inference";
+
+  if (!token) {
+    return res.status(500).json({ error: '伺服器未設定 GITHUB_TOKEN' });
+  }
+
+  const { systemPrompt, userMessage, chatHistory } = req.body || {};
+  const messages = [];
+
+  if (systemPrompt) messages.push({ role: 'system', content: systemPrompt });
+  if (Array.isArray(chatHistory)) {
+    chatHistory.forEach(m => {
+      messages.push({ role: m.role === 'ai' ? 'assistant' : 'user', content: m.text });
     });
   }
-  const testAccount = await nodemailer.createTestAccount();
-  return nodemailer.createTransport({
-    host: 'smtp.ethereal.email',
-    port: 587,
-    secure: false,
-    auth: { user: testAccount.user, pass: testAccount.pass },
-  });
-}
+  messages.push({ role: 'user', content: userMessage || '你好，我完成畫作了。' });
 
-let transporterPromise = createTransporter();
-
-// 1. 寄信 API (維持原樣，讓你可以收到信)
-app.post('/api/send-code', async (req, res) => {
-  const { account } = req.body || {};
-  if (!account) return res.status(400).json({ ok: false, message: '請輸入帳號' });
-
-  const code = String(Math.floor(100000 + Math.random() * 900000));
-  
   try {
-    const transporter = await transporterPromise;
-    await transporter.sendMail({
-      from: process.env.FROM_EMAIL || 'ArtEcho <no-reply@artecho.local>',
-      to: account,
-      subject: 'ArtEcho 驗證碼',
-      html: `<p>您的驗證碼為： <strong>${code}</strong></p>`
+    // 使用正確的微軟 SDK 呼叫方式
+    const client = ModelClient(endpoint, new AzureKeyCredential(token));
+    const response = await client.path("/chat/completions").post({
+      body: {
+        messages: messages,
+        model: "openai/gpt-4o-mini", // 🚀 先用保證能過的模型測試
+        max_tokens: 500,
+        temperature: 0.7
+      }
     });
-    return res.json({ ok: true, message: '驗證碼已寄出' });
+
+    if (isUnexpected(response)) {
+      throw new Error(response.body.error?.message || "模型呼叫失敗");
+    }
+
+    const aiText = response.body.choices[0].message.content;
+    return res.json({ text: aiText });
   } catch (err) {
-    console.error('寄信失敗:', err);
-    return res.status(500).json({ ok: false, message: '寄送失敗' });
+    console.error('API 錯誤:', err);
+    return res.status(500).json({ error: 'AI 伺服器錯誤' });
   }
 });
 
-// 2. 登入 API (改成只要有輸入驗證碼就通過)
-app.post('/api/login', (req, res) => {
-  const { account, code } = req.body || {};
-
-  // 核心改動：只要前端有傳 code 過來（不論是多少），都回傳成功
-  if (code && code.length > 0) {
-    console.log(`[通行授權] 帳號 ${account} 使用驗證碼 ${code} 嘗試登入，已強制放行。`);
-    return res.json({ 
-      ok: true, 
-      message: '登入成功（快速通行模式）' 
-    });
-  }
-
-  return res.status(400).json({ ok: false, message: '請輸入驗證碼' });
-});
-
-module.exports = app;
+// 啟動伺服器
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => console.log(`🚀 API 伺服器已啟動: http://localhost:${PORT}`));
