@@ -140,6 +140,20 @@ function injectCloudActionStyles() {
             margin-bottom:12px;
             font-size:0.95rem;
         }
+        .author-link {
+            color: #2f5d4f;
+            text-decoration: none;
+            font-weight: bold;
+            border-bottom: 1px dashed #2f5d4f;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            padding-bottom: 2px;
+        }
+        .author-link:hover {
+            color: #1a3a30;
+            border-bottom: 1px solid #1a3a30;
+            background-color: rgba(47, 93, 79, 0.1);
+        }
         .art-modal-body .desc {
             color:#4f5b59;
             line-height:1.5;
@@ -208,12 +222,11 @@ function openModal(work) {
     const title = document.getElementById('art-modal-title');
     const author = document.getElementById('art-modal-author');
     const desc = document.getElementById('art-modal-desc');
-
+    const authorName = work.author || '匿名';
     img.src = work.src;
     img.alt = work.name || '作品預覽';
     title.textContent = work.name || '無名作品';
-    author.textContent = `作者：${work.author || '匿名'}`;
-    desc.textContent = work.description || (work.storyTitle ? `${work.storyTitle} - 情緒等級 ${work.level || '—'}` : '目前沒有作品介紹。');
+    author.innerHTML = `作者：<a href="Author_Space.html?author=${encodeURIComponent(authorName)}" class="author-link">${authorName}</a>`;    desc.textContent = work.description || (work.storyTitle ? `${work.storyTitle} - 情緒等級 ${work.level || '—'}` : '目前沒有作品介紹。');
 
     backdrop.style.display = 'flex';
     // focus trap simple: focus close button
