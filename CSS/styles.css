@@ -1470,6 +1470,27 @@ svg.hand-drawn {
   transform: translateY(-2px);
 }
 
+.gallery-section .nav-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+  transform: none;
+}
+
+.delete-creature-btn {
+  background: rgba(191, 52, 52, 0.78);
+  border-color: rgba(255,255,255,0.45);
+  display: none;
+}
+
+.delete-creature-btn.is-visible {
+  display: inline-flex;
+  align-items: center;
+}
+
+.delete-creature-btn:not(:disabled):hover {
+  background: rgba(168, 36, 36, 0.9);
+}
+
 #drawing-overlay {
   position: fixed;
   top: 0;

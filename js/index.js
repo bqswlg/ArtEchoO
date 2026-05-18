@@ -175,6 +175,10 @@ document.addEventListener("DOMContentLoaded", function () {
     var isEraser = false;
     var history = [];
     var pendingCreatureData = null;
+    var selectedCreature = null;
+    var selectedCreatureTimer = null;
+    var creatureStorageKey = 'artEchoSymbioticCreatures';
+    var deleteCreatureBtn = document.getElementById('deleteCreatureBtn');
 
     var feedbackMessages = {
       fish: ["一隻可愛的小金魚誕生了！", "看！水池裡多了一位新朋友。", "這隻小魚游得真自在。", "優雅的金魚加入了水族館。"],
@@ -238,6 +242,96 @@ document.addEventListener("DOMContentLoaded", function () {
       history = [];
     };
 
+    var showToast = function (message) {
+      var toast = document.getElementById('feedback-toast');
+      if (!toast) return;
+      toast.innerText = message;
+      toast.classList.add('show');
+      window.setTimeout(function () { toast.classList.remove('show'); }, 2500);
+    };
+
+    var updateDeleteButton = function () {
+      if (!deleteCreatureBtn) return;
+      deleteCreatureBtn.disabled = !selectedCreature;
+      deleteCreatureBtn.classList.toggle('is-visible', !!selectedCreature);
+    };
+
+    var clearSelectedCreature = function () {
+      if (selectedCreature) selectedCreature.isSelected = false;
+      selectedCreature = null;
+      if (selectedCreatureTimer) window.clearTimeout(selectedCreatureTimer);
+      selectedCreatureTimer = null;
+      updateDeleteButton();
+    };
+
+    var selectCreature = function (creature) {
+      clearSelectedCreature();
+      selectedCreature = creature;
+      selectedCreature.isSelected = true;
+      selectedCreature.triggerName();
+      updateDeleteButton();
+      selectedCreatureTimer = window.setTimeout(clearSelectedCreature, 6000);
+    };
+
+    var saveCreatures = function () {
+      try {
+        var data = {};
+        Object.keys(creatures).forEach(function (theme) {
+          data[theme] = creatures[theme].map(function (c) {
+            return {
+              id: c.id,
+              name: c.name,
+              type: c.type,
+              image: c.canvas.toDataURL('image/png'),
+              xRatio: ecoCanvas.width ? c.x / ecoCanvas.width : 0.5,
+              yRatio: ecoCanvas.height ? c.y / ecoCanvas.height : 0.5,
+              headSide: c.headSide,
+              vx: c.vx,
+              vy: c.vy
+            };
+          });
+        });
+        localStorage.setItem(creatureStorageKey, JSON.stringify(data));
+      } catch (err) {
+        console.warn('Unable to save gallery creatures.', err);
+      }
+    };
+
+    var loadCreatures = function () {
+      var raw = localStorage.getItem(creatureStorageKey);
+      if (!raw) return;
+      try {
+        var data = JSON.parse(raw);
+        Object.keys(creatures).forEach(function (theme) {
+          (data[theme] || []).forEach(function (item) {
+            var img = new Image();
+            img.onload = function () {
+              var storedCanvas = document.createElement('canvas');
+              storedCanvas.width = img.width;
+              storedCanvas.height = img.height;
+              storedCanvas.getContext('2d').drawImage(img, 0, 0);
+              var c = new SmartCreature(
+                storedCanvas,
+                (item.xRatio || 0.5) * ecoCanvas.width,
+                (item.yRatio || 0.5) * ecoCanvas.height,
+                item.type || theme,
+                item.headSide || 1,
+                item.name || '無名小生物',
+                item.id
+              );
+              if (typeof item.vx === 'number') c.vx = item.vx;
+              if (typeof item.vy === 'number') c.vy = item.vy;
+              c.updateFlip();
+              creatures[theme].push(c);
+            };
+            img.src = item.image;
+          });
+        });
+      } catch (err) {
+        console.warn('Unable to load gallery creatures.', err);
+      }
+    };
+
     // 獲取精確繪圖相對座標
     var getPos = function (e) {
       var rect = drawCanvas.getBoundingClientRect();
@@ -278,13 +372,35 @@ document.addEventListener("DOMContentLoaded", function () {
       var rect = ecoCanvas.getBoundingClientRect();
       var clickX = e.clientX - rect.left;
       var clickY = e.clientY - rect.top;
-      creatures[currentTheme].forEach(function (c) {
+      var target = null;
+      creatures[currentTheme].slice().reverse().some(function (c) {
         var dx = clickX - c.x;
         var dy = clickY - c.y;
         if (Math.abs(dx) < c.w / 2 + 20 && Math.abs(dy) < c.h / 2 + 20) {
-          c.triggerName();
+          target = c;
+          return true;
         }
+        return false;
       });
+      if (target) {
+        selectCreature(target);
+      } else {
+        clearSelectedCreature();
+      }
+    };
+
+    window.deleteSelectedCreature = function () {
+      if (!selectedCreature) {
+        showToast('請先點選想刪除的生物');
+        return;
+      }
+      var creatureName = selectedCreature.name || '這個生物';
+      var themeCreatures = creatures[selectedCreature.type] || creatures[currentTheme];
+      var index = themeCreatures.indexOf(selectedCreature);
+      if (index !== -1) themeCreatures.splice(index, 1);
+      clearSelectedCreature();
+      saveCreatures();
+      showToast('「' + creatureName + '」已從畫廊移除');
     };
 
     // 完成繪製演算法
@@ -333,23 +449,23 @@ document.addEventListener("DOMContentLoaded", function () {
       var name = document.getElementById('creature-name').value || "無名小生物";
       var c = new SmartCreature(pendingCreatureData.canvas, ecoCanvas.width / 2, ecoCanvas.height / 2, currentTheme, pendingCreatureData.headSide, name);
       creatures[currentTheme].push(c);
+      saveCreatures();
 
       namingOverlay.style.display = 'none';
       window.closeDrawing();
 
-      var toast = document.getElementById('feedback-toast');
-      toast.innerText = `「${name}」已加入畫廊！`;
-      toast.classList.add('show');
-      window.setTimeout(function () { toast.classList.remove('show'); }, 2500);
+      showToast('「' + name + '」已加入畫廊！');
       pendingCreatureData = null;
     };
 
     // 智能生物動態類別
     class SmartCreature {
-      constructor(canvas, x, y, type, headSide, name) {
+      constructor(canvas, x, y, type, headSide, name, id) {
         this.canvas = canvas; this.x = x; this.y = y;
         this.w = canvas.width; this.h = canvas.height;
         this.type = type; this.headSide = headSide; this.name = name;
+        this.id = id || String(Date.now()) + '-' + Math.random().toString(36).slice(2);
+        this.isSelected = false;
         this.vx = (Math.random() * 0.6 + 0.5) * (Math.random() > 0.5 ? 1 : -1);
         this.vy = (type === 'jellyfish' ? -0.5 : (Math.random() - 0.5) * 1.0);
         this.phase = Math.random() * Math.PI * 2;
@@ -378,6 +494,15 @@ document.addEventListener("DOMContentLoaded", function () {
       }
       draw(ctx) {
         ctx.save(); ctx.translate(this.x, this.y);
+
+        if (this.isSelected) {
+          ctx.save();
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+          ctx.lineWidth = 2;
+          ctx.setLineDash([8, 6]);
+          ctx.strokeRect(-this.w / 2 - 10, -this.h / 2 - 10, this.w + 20, this.h + 20);
+          ctx.restore();
+        }
 
         if (this.nameOpacity > 0) {
           ctx.save();
@@ -424,6 +549,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 初始化與事件監聽
     resizeGallery();
+    loadCreatures();
     window.addEventListener('resize', resizeGallery);
     loopGallery();
   });
