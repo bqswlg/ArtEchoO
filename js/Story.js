@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ArtEcho 劇情與章節整合資料庫
  * 針對國中小客群進行文字簡化，並支援「無圖片」的純文字卡片排版
  */
@@ -8,7 +8,7 @@ window.ArtEchoScenarios = [
     id: "snow_white",
     category: "official",
     title: "好久不見的家人",
-    description: "這是一個關於白雪公主與家人的故事，準備好去神秘的森林裡探險了嗎？",
+    description: "這是一個關於家人的故事，準備好了嗎？",
     image: "images/family.png",
     clickable: true,
     intro: {
@@ -20,6 +20,21 @@ window.ArtEchoScenarios = [
       "1": {
         title: "第一章：好久不見的家人",
         desc: "你終於見到好久不見的家人了！你現在的心情是怎麼樣的呢？把你的感覺畫下來吧！",
+        img: "images/family.png"
+      },
+      "2": {
+        title: "第二章：分享美味的晚餐",
+        desc: "大家圍坐在餐桌旁，吃著熱騰騰的飯菜，聊著分開時發生的趣事。畫出桌上你最想跟家人分享的那道菜吧！",
+        img: "images/family.png"
+      },
+      "3": {
+        title: "第三章：飯後的客廳時光",
+        desc: "吃飽後，大家一起坐在沙發上，客廳裡充滿了溫暖的燈光與笑聲。試著畫出你和家人一起看電視或聊天的溫馨畫面。",
+        img: "images/family.png"
+      },
+      "4": {
+        title: "第四章：暖心的晚安擁抱",
+        desc: "快樂的一天過去了，睡前家人給了你一個大大的擁抱，心裡覺得無比踏實。用溫暖的顏色，畫出這個充滿愛的擁抱吧。",
         img: "images/family.png"
       }
     }
@@ -46,7 +61,22 @@ window.ArtEchoScenarios = [
       "1": {
         title: "第一章：潛入深海",
         desc: "感覺水越來越深，光線也慢慢變暗了，請畫出你心中的那片深藍色。",
-        img: "images/music.png" // 畫布內的參考圖可以保留
+        img: "images/music.png"
+      },
+      "2": {
+        title: "第二章：發光的發光生物",
+        desc: "周圍出現了好多亮晶晶的水母和魚群！試著用亮麗的顏色，畫出在黑暗中為你引路的小生物吧。",
+        img: "images/music.png"
+      },
+      "3": {
+        title: "第三章：失落的水底遺蹟",
+        desc: "前方隱約出現了一座古老神秘的建築物殘骸。發揮你的想像力，把這座沉睡在海底的城堡畫出來。",
+        img: "images/music.png"
+      },
+      "4": {
+        title: "第四章：重見天日的寶藏",
+        desc: "在遺蹟的深處，你發現了一個閃閃發光的寶箱！快用金色或你最喜歡的色彩，畫出寶箱裡裝著的神秘禮物。",
+        img: "images/music.png"
       }
     }
   },
@@ -66,13 +96,27 @@ window.ArtEchoScenarios = [
     chapters: {
       "1": {
         title: "第一章：看星星的路上",
-        desc: "心跳好像變快了，周圍的風景感覺好特別...",
+        desc: "心跳好像變快了，周圍的風景感覺好特別，遠處的樹影在微風中輕輕搖曳。",
+        img: "images/grandandog.png"
+      },
+      "2": {
+        title: "第二章：夜幕低垂的森林",
+        desc: "走進了密林之中，雖然有點黑，但腳邊有些不知名的發光植物正一閃一閃的，像是引路的精靈。",
+        img: "images/grandandog.png"
+      },
+      "3": {
+        title: "第三章：登上山頂的驚喜",
+        desc: "終於穿過了森林！當你抬起頭，視野豁然開朗，整片銀河就像一條發光的河流橫跨在夜空中。",
+        img: "images/grandandog.png"
+      },
+      "4": {
+        title: "第四章：流星劃過的瞬間",
+        desc: "你找了一塊舒服的草地躺了下來。這時，一顆流星悄悄劃過天際，你趕緊閉上眼睛許下了心願。",
         img: "images/grandandog.png"
       }
     }
   }
 ];
-
 
 /* ==========================================================================
    工具函式區
@@ -80,172 +124,13 @@ window.ArtEchoScenarios = [
 window.getChapterData = function(scenarioId, chapterLevel) {
   const scenario = window.ArtEchoScenarios.find(s => s.id === scenarioId);
   if (scenario && scenario.chapters) {
-    return scenario.chapters[chapterLevel] || scenario.chapters["1"];
+    return scenario.chapters[chapterLevel] || getFallbackChapter(scenario, chapterLevel);
   }
   return null;
 };
 
 window.getScenarioById = function(id) {
   return window.ArtEchoScenarios.find(s => s.id === id);
-};
-
-
-/* ==========================================================================
-   AI 劇情生成器 (支援圖片上傳與文字簡化)
-   ========================================================================== */
-window.createNewScenario = function() {
-  const modalHtml = `
-    <div class="video-modal" id="aiGeneratorModal" style="z-index: 1000; position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
-      <div class="panel" style="max-width: 520px; width: 92%; background: #fffdf8; position: relative; padding: 30px; border-radius: 24px; border: 1px solid var(--line); box-shadow: 0 20px 40px rgba(0,0,0,0.3); margin: 0; max-height: 90vh; overflow-y: auto;">
-        <button class="close-btn" style="position: absolute; top: 18px; right: 18px; background: none; border: none; font-size: 24px; cursor: pointer; color: #888;">✖</button>
-        
-        <div id="ai-input-stage">
-          <h2 style="color: var(--moss); margin-bottom: 6px; font-size: 1.4rem; font-family: 'Noto Serif TC', serif;">✨ AI 魔法故事機</h2>
-          <p style="color: #666; font-size: 0.9rem; margin-bottom: 22px;">選一個你喜歡的風格和心情，讓 AI 幫你變出一個專屬的畫畫故事！</p>
-          
-          <div class="control-group" style="margin-bottom: 16px;">
-            <label style="font-weight: bold; display: block; margin-bottom: 6px; font-size: 0.95rem;">🖼️ 幫故事挑一張封面照片 (沒有照片也沒關係喔！)</label>
-            <input type="file" id="ai-image-upload" class="editable-input" accept="image/*" style="width: 100%; background: #fff;">
-          </div>
-
-          <div class="control-group" style="margin-bottom: 16px;">
-            <label style="font-weight: bold; display: block; margin-bottom: 6px; font-size: 0.95rem;">🎨 故事風格</label>
-            <select id="ai-style" class="editable-input" style="width: 100%; height: 40px; background: #fff;">
-              <option value="太空科幻">🚀 太空科幻 (搭飛船去宇宙)</option>
-              <option value="魔法奇幻">🔮 魔法奇幻 (哈利波特的魔法世界)</option>
-              <option value="童話森林">🌳 童話森林 (遇見會說話的動物)</option>
-              <option value="溫馨校園">🏫 溫馨校園 (和同學一起玩)</option>
-            </select>
-          </div>
-          
-          <div class="control-group" style="margin-bottom: 16px;">
-            <label style="font-weight: bold; display: block; margin-bottom: 6px; font-size: 0.95rem;">🎭 你現在的心情</label>
-            <select id="ai-feeling" class="editable-input" style="width: 100%; height: 40px; background: #fff;">
-              <option value="有點害怕">👻 有點害怕 (像萬聖節一樣刺激)</option>
-              <option value="溫暖開心">🏡 溫暖開心 (像回到家一樣舒服)</option>
-              <option value="安靜一個人">🌌 安靜一個人 (享受自己的小天地)</option>
-              <option value="充滿活力">🔥 充滿活力 (準備好去冒險！)</option>
-            </select>
-          </div>
-          
-          <div class="control-group" style="margin-bottom: 22px;">
-            <label style="font-weight: bold; display: block; margin-bottom: 6px; font-size: 0.95rem;">✍️ 告訴 AI 你的想法或夢境</label>
-            <textarea id="ai-prompt" class="editable-textarea" style="width: 100%; height: 80px; resize: none; background: #fff;" placeholder="（選填）比如說：我夢到在森林裡被大野狼追，或者我今天考試考很好..."></textarea>
-          </div>
-          
-          <button id="ai-submit-btn" class="cta-btn primary" style="width: 100%; justify-content: center; padding: 12px; font-size: 1rem; cursor: pointer; border-radius: 12px; background: #c2693d; color: white; border: none;">產生我的魔法故事</button>
-        </div>
-
-        <div id="ai-loading-stage" style="display: none; text-align: center; padding: 45px 0;">
-          <div style="font-size: 3.5rem; animation: float 1.2s ease-in-out infinite; margin-bottom: 15px;">✨🤖✨</div>
-          <h3 style="color: var(--moss); margin-bottom: 8px;">AI 正在發揮魔法...</h3>
-          <p style="color: #888; font-size: 0.88rem; margin: 0;">正在幫你寫故事，請等一下喔...</p>
-        </div>
-
-        <div id="ai-result-stage" style="display: none;">
-          <h2 style="color: #c66b3d; margin-bottom: 14px; font-size: 1.3rem; font-family: 'Noto Serif TC', serif;">🎉 你的專屬故事完成囉！</h2>
-          <div style="background: rgba(47,93,79,0.05); padding: 18px; border-radius: 14px; border-left: 4px solid var(--moss); margin-bottom: 24px;">
-            <h3 id="res-title" style="font-size: 1.1rem; margin: 0 0 8px 0; color: var(--ink);"></h3>
-            <p id="res-desc" style="font-size: 0.9rem; color: #5a6b6a; line-height: 1.6; margin: 0;"></p>
-          </div>
-          <div style="display: flex; gap: 12px;">
-            <button id="save-personal-btn" class="btn" style="flex: 1; padding: 12px; border-radius: 12px; font-weight: bold;">🔒 存在我的專屬劇情</button>
-            <button id="save-shared-btn" class="cta-btn primary" style="flex: 1; padding: 12px; border-radius: 12px; justify-content: center; background: #c2693d; color: white; border: none; font-weight: bold; cursor: pointer;">🌐 公開分享給大家</button>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  `;
-
-  const modal = document.createElement("div");
-  modal.innerHTML = modalHtml;
-  document.body.appendChild(modal);
-
-  const closeBtn = modal.querySelector(".close-btn");
-  const submitBtn = modal.querySelector("#ai-submit-btn");
-  const inputStage = modal.querySelector("#ai-input-stage");
-  const loadingStage = modal.querySelector("#ai-loading-stage");
-  const resultStage = modal.querySelector("#ai-result-stage");
-  const imageUploadInput = modal.querySelector("#ai-image-upload");
-
-  closeBtn.addEventListener("click", () => document.body.removeChild(modal));
-
-  submitBtn.addEventListener("click", () => {
-    const styleValue = modal.querySelector("#ai-style").value;
-    const feelingValue = modal.querySelector("#ai-feeling").value;
-    const promptValue = modal.querySelector("#ai-prompt").value.trim();
-
-    // 處理圖片上傳
-    let uploadedImageBase64 = null;
-    if (imageUploadInput.files && imageUploadInput.files[0]) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        uploadedImageBase64 = e.target.result;
-        startProcessing();
-      };
-      reader.readAsDataURL(imageUploadInput.files[0]);
-    } else {
-      // 沒上傳圖片就直接執行
-      startProcessing();
-    }
-
-    function startProcessing() {
-      inputStage.style.display = "none";
-      loadingStage.style.display = "block";
-
-      setTimeout(() => {
-        loadingStage.style.display = "none";
-        resultStage.style.display = "block";
-
-        // 童趣化的標題與內容
-        const titleStyleName = styleValue.split(' ')[0]; // 只取前面四個字，如"太空科幻"
-        const finalTitle = promptValue ? `小畫家的夢境：${promptValue.substring(0, 6)}...` : `屬於你的${titleStyleName}故事`;
-        const finalDesc = `AI 用你選的「${feelingValue}」加上「${titleStyleName}」變出了這個故事！${promptValue ? `因為你寫了「${promptValue}」，故事變得更有趣囉！` : ''} 趕快進去畫畫看吧！`;
-
-        modal.querySelector("#res-title").textContent = finalTitle;
-        modal.querySelector("#res-desc").textContent = finalDesc;
-
-        modal.querySelector("#save-personal-btn").onclick = function() {
-          executeSave("personal", finalTitle, finalDesc, styleValue, feelingValue, uploadedImageBase64);
-        };
-        modal.querySelector("#save-shared-btn").onclick = function() {
-          executeSave("shared", finalTitle, finalDesc, styleValue, feelingValue, uploadedImageBase64);
-        };
-      }, 1500);
-    }
-  });
-
-  // 將新故事加入清單
-  function executeSave(category, title, desc, style, feeling, imageUrl) {
-    const isShared = (category === "shared");
-    const newId = `ai-generated-${Date.now()}`;
-    const cleanFeeling = feeling.split(' ')[0]; // 取前面幾個字
-
-    const generatedScenario = {
-      id: newId,
-      category: category,
-      title: isShared ? `${title} (匿名小畫家)` : title,
-      description: desc,
-      image: imageUrl, // 如果沒上傳，這裡就是 null
-      clickable: true,
-      intro: {
-        question: `你準備好進入這個【${cleanFeeling}】的故事了嗎？出發前你現在覺得...`,
-        options: ["已經準備好了！", "先想一下要畫什麼", "深呼吸一口氣"]
-      },
-      chapters: {
-        "1": {
-          title: `第一章：故事開始囉`,
-          desc: `故事準備好了！想想剛剛選的「${cleanFeeling}」，在畫布上用你喜歡的顏色畫出來吧！`,
-          img: imageUrl || "images/music.png" // 畫布內預設一張圖防呆
-        }
-      }
-    };
-
-    window.ArtEchoScenarios.push(generatedScenario);
-    document.body.removeChild(modal);
-    window.renderScenarios();
-  }
 };
 
 
@@ -383,6 +268,172 @@ window.renderScenarios = function() {
       sharedGrid.appendChild(card);
     } else {
       officialGrid.appendChild(card);
+    }
+  });
+};
+
+window.createNewScenario = function() {
+  const modal = document.createElement("div");
+  modal.innerHTML = `
+    <div class="video-modal" id="aiGeneratorModal" style="z-index: 1000; position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+      <div class="panel" style="max-width: 560px; width: 92%; background: #fffdf8; position: relative; padding: 30px; border-radius: 24px; border: 1px solid var(--line); box-shadow: 0 20px 40px rgba(0,0,0,0.3); margin: 0; max-height: 90vh; overflow-y: auto;">
+        <button class="close-btn" style="position: absolute; top: 18px; right: 18px; background: none; border: none; font-size: 24px; cursor: pointer; color: #888;">x</button>
+
+        <div id="ai-input-stage">
+          <h2 style="color: var(--moss); margin-bottom: 6px; font-size: 1.4rem; font-family: 'Noto Serif TC', serif;">AI 魔法故事機</h2>
+          <p style="color: #666; font-size: 0.9rem; margin-bottom: 22px;">上傳封面、選擇風格和心情，AI 會產生四個章節的繪圖劇情。</p>
+
+          <div class="control-group" style="margin-bottom: 16px;">
+            <label style="font-weight: bold; display: block; margin-bottom: 6px; font-size: 0.95rem;">故事封面圖片</label>
+            <input type="file" id="ai-image-upload" class="editable-input" accept="image/*" style="width: 100%; background: #fff;">
+          </div>
+
+          <div class="control-group" style="margin-bottom: 16px;">
+            <label style="font-weight: bold; display: block; margin-bottom: 6px; font-size: 0.95rem;">故事風格</label>
+            <select id="ai-style" class="editable-input" style="width: 100%; height: 40px; background: #fff;">
+              <option value="魔法奇幻">魔法奇幻</option>
+              <option value="溫柔童話">溫柔童話</option>
+              <option value="森林冒險">森林冒險</option>
+              <option value="星空科幻">星空科幻</option>
+            </select>
+          </div>
+
+          <div class="control-group" style="margin-bottom: 16px;">
+            <label style="font-weight: bold; display: block; margin-bottom: 6px; font-size: 0.95rem;">故事心情</label>
+            <select id="ai-feeling" class="editable-input" style="width: 100%; height: 40px; background: #fff;">
+              <option value="好奇探索">好奇探索</option>
+              <option value="安靜療癒">安靜療癒</option>
+              <option value="勇敢面對">勇敢面對</option>
+              <option value="溫暖陪伴">溫暖陪伴</option>
+            </select>
+          </div>
+
+          <div class="control-group" style="margin-bottom: 22px;">
+            <label style="font-weight: bold; display: block; margin-bottom: 6px; font-size: 0.95rem;">故事提示詞</label>
+            <textarea id="ai-prompt" class="editable-textarea" style="width: 100%; height: 90px; resize: none; background: #fff;" placeholder="例如：一個在雨天迷路的小孩，找到會發光的種子..."></textarea>
+          </div>
+
+          <button id="ai-submit-btn" class="cta-btn primary" style="width: 100%; justify-content: center; padding: 12px; font-size: 1rem; cursor: pointer; border-radius: 12px; background: #c2693d; color: white; border: none;">產生我的魔法故事</button>
+        </div>
+
+        <div id="ai-loading-stage" style="display: none; text-align: center; padding: 45px 0;">
+          <div style="font-size: 3.5rem; animation: float 1.2s ease-in-out infinite; margin-bottom: 15px;">...</div>
+          <h3 style="color: var(--moss); margin-bottom: 8px;">AI 正在編寫四章劇情</h3>
+          <p style="color: #888; font-size: 0.88rem; margin: 0;">請稍等一下，故事正在成形。</p>
+        </div>
+
+        <div id="ai-result-stage" style="display: none;">
+          <h2 style="color: #c66b3d; margin-bottom: 14px; font-size: 1.3rem; font-family: 'Noto Serif TC', serif;">故事生成完成</h2>
+          <div style="background: rgba(47,93,79,0.05); padding: 18px; border-radius: 14px; border-left: 4px solid var(--moss); margin-bottom: 18px;">
+            <h3 id="res-title" style="font-size: 1.1rem; margin: 0 0 8px 0; color: var(--ink);"></h3>
+            <p id="res-desc" style="font-size: 0.9rem; color: #5a6b6a; line-height: 1.6; margin: 0;"></p>
+          </div>
+          <ol id="res-chapters" style="color: #4f595f; font-size: 0.9rem; line-height: 1.7; padding-left: 20px; margin-bottom: 22px;"></ol>
+          <div style="display: flex; gap: 12px;">
+            <button id="save-personal-btn" class="btn" style="flex: 1; padding: 12px; border-radius: 12px; font-weight: bold;">存在我的專屬劇情</button>
+            <button id="save-shared-btn" class="cta-btn primary" style="flex: 1; padding: 12px; border-radius: 12px; justify-content: center; background: #c2693d; color: white; border: none; font-weight: bold; cursor: pointer;">分享到社群共享</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const closeBtn = modal.querySelector(".close-btn");
+  const submitBtn = modal.querySelector("#ai-submit-btn");
+  const inputStage = modal.querySelector("#ai-input-stage");
+  const loadingStage = modal.querySelector("#ai-loading-stage");
+  const resultStage = modal.querySelector("#ai-result-stage");
+  const imageUploadInput = modal.querySelector("#ai-image-upload");
+
+  closeBtn.addEventListener("click", () => document.body.removeChild(modal));
+
+  const readCoverImage = () => new Promise(resolve => {
+    if (!imageUploadInput.files || !imageUploadInput.files[0]) {
+      resolve(null);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = event => resolve(event.target.result);
+    reader.onerror = () => resolve(null);
+    reader.readAsDataURL(imageUploadInput.files[0]);
+  });
+
+  const buildScenario = (category, story, imageUrl) => {
+    const isShared = category === "shared";
+    const chapterImage = imageUrl || "images/music.png";
+    return {
+      id: `ai-generated-${Date.now()}`,
+      category,
+      title: isShared ? `${story.title} (匿名小畫家)` : story.title,
+      description: story.description,
+      image: imageUrl,
+      clickable: true,
+      intro: {
+        question: story.intro.question,
+        options: story.intro.options
+      },
+      chapters: Object.fromEntries(Object.entries(story.chapters).map(([level, chapter]) => [
+        level,
+        {
+          title: chapter.title,
+          desc: chapter.desc,
+          img: chapterImage
+        }
+      ]))
+    };
+  };
+
+  submitBtn.addEventListener("click", async () => {
+    const style = modal.querySelector("#ai-style").value;
+    const feeling = modal.querySelector("#ai-feeling").value;
+    const prompt = modal.querySelector("#ai-prompt").value.trim();
+
+    inputStage.style.display = "none";
+    loadingStage.style.display = "block";
+    submitBtn.disabled = true;
+
+    try {
+      const imageUrl = await readCoverImage();
+      const story = await generateScenarioWithAI({ style, feeling, prompt });
+
+      loadingStage.style.display = "none";
+      resultStage.style.display = "block";
+      modal.querySelector("#res-title").textContent = story.title;
+      modal.querySelector("#res-desc").textContent = story.description;
+
+      const chapterList = modal.querySelector("#res-chapters");
+      chapterList.innerHTML = "";
+      Object.values(story.chapters).forEach(chapter => {
+        const item = document.createElement("li");
+        const title = document.createElement("strong");
+        title.textContent = chapter.title;
+        item.appendChild(title);
+        item.appendChild(document.createTextNode(`：${chapter.desc}`));
+        chapterList.appendChild(item);
+      });
+
+      modal.querySelector("#save-personal-btn").onclick = function() {
+        const scenario = buildScenario("personal", story, imageUrl);
+        window.ArtEchoScenarios.push(scenario);
+        saveGeneratedScenario(scenario);
+        document.body.removeChild(modal);
+        window.renderScenarios();
+      };
+
+      modal.querySelector("#save-shared-btn").onclick = function() {
+        const scenario = buildScenario("shared", story, imageUrl);
+        window.ArtEchoScenarios.push(scenario);
+        saveGeneratedScenario(scenario);
+        document.body.removeChild(modal);
+        window.renderScenarios();
+      };
+    } catch (err) {
+      loadingStage.style.display = "none";
+      inputStage.style.display = "block";
+      submitBtn.disabled = false;
+      alert(err.message || "AI 劇情生成失敗，請稍後再試。");
     }
   });
 };

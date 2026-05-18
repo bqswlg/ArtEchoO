@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import ModelClient, { isUnexpected } from "@azure-rest/ai-inference";
 import { AzureKeyCredential } from "@azure/core-auth";
+import { generateStoryScenario } from "./storyGenerator.js";
 
 dotenv.config();
 
@@ -23,7 +24,7 @@ app.use(cors({
   }
 }));
 
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
 
 // 測試用健康檢查路由
 app.get('/api/health', (req, res) => res.json({ ok: true, status: "伺服器運行中" }));
@@ -54,7 +55,7 @@ app.post('/api/chat', async (req, res) => {
     const response = await client.path("/chat/completions").post({
       body: {
         messages: messages,
-        model: "openai/gpt-4o-mini", // 🚀 先用保證能過的模型測試
+        model: process.env.CHAT_MODEL || "openai/gpt-4o-mini",
         max_tokens: 500,
         temperature: 0.7
       }
@@ -69,6 +70,16 @@ app.post('/api/chat', async (req, res) => {
   } catch (err) {
     console.error('API 錯誤:', err);
     return res.status(500).json({ error: 'AI 伺服器錯誤' });
+  }
+});
+
+app.post('/api/story', async (req, res) => {
+  try {
+    const story = await generateStoryScenario(req.body || {});
+    return res.json({ story });
+  } catch (err) {
+    console.error('Story generation error:', err);
+    return res.status(500).json({ error: err.message || 'AI 劇情生成失敗' });
   }
 });
 

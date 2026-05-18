@@ -53,7 +53,7 @@ export default async function handler(req, res) {
                 messages: messages,
                 // ⚠️ 強烈建議：測試階段請先用 openai/gpt-4o-mini 確保資料流通。
                 // 確定一切正常後，若你的帳號有授權，再去挑戰換成 openai/gpt-5-mini
-                model: "openai/gpt-5-mini",
+                model: process.env.CHAT_MODEL || "openai/gpt-4o-mini",
                 max_tokens: 500,
                 temperature: 0.7
             }
