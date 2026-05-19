@@ -2,6 +2,7 @@
  * ArtEcho 劇情與章節整合資料庫
  * 針對國中小客群進行文字簡化，並支援「無圖片」的純文字卡片排版
  */
+import { GeminiService } from "./geminiService.js";
 window.ArtEchoScenarios = [
   // --- 官方劇情 ---
   {
@@ -396,7 +397,15 @@ window.createNewScenario = function() {
 
     try {
       const imageUrl = await readCoverImage();
-      const story = await generateScenarioWithAI({ style, feeling, prompt });
+      const story = await new Promise((resolve, reject) => {
+        GeminiService.generateStory({
+          style,
+          feeling,
+          prompt,
+          onSuccess: resolve,
+          onError: reject
+        });
+      });
 
       loadingStage.style.display = "none";
       resultStage.style.display = "block";

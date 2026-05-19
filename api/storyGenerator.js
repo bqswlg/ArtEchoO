@@ -42,13 +42,11 @@ function normalizeStory(story, fallback) {
   };
 }
 
-export async function generateStoryScenario({ style, feeling, prompt }) {
-  const token = process.env.GITHUB_TOKEN;
+export async function generateStoryScenario({ style, feeling, prompt, token, model}) {
   const endpoint = process.env.GITHUB_MODELS_BASE_URL || "https://models.github.ai/inference";
-  const model = process.env.STORY_MODEL || "openai/gpt-4o-mini";
 
   if (!token) {
-    throw new Error("缺少 GITHUB_TOKEN，無法呼叫故事生成模型");
+    throw new Error("缺少 STORY_GITHUB_TOKEN，無法呼叫故事生成模型");
   }
 
   const fallback = {
@@ -95,9 +93,11 @@ JSON 格式必須完全符合：
       ],
       model,
       max_tokens: 1400,
-      temperature: 0.85
+      temperature: 0.3
     }
   });
+
+  console.log(JSON.stringify(response.body, null, 2));
 
   if (isUnexpected(response)) {
     throw new Error(response.body.error?.message || "故事生成模型呼叫失敗");

@@ -430,7 +430,7 @@
     const scenarioTitle = document.getElementById("scenarioTitle").textContent;
     const prompt = `你是一位藝術心理導師。情境：${scenarioTitle}。數據：填滿率${stats.coverage}%。可以先請使用者解釋一下畫作，請不要稱讚，針對數據提出一個深度反問，引導使用者自我察覺，限40字。`;
 
-    GeminiService.call({
+    await GeminiService.callChat({
       systemPrompt: prompt,
       userMessage: userInput,
       chatHistory: chatLog,
@@ -449,7 +449,7 @@
         }
       },
       onSuccess: (formattedText, rawText) => {
-        chatLog.push({ role: 'ai', text: rawText });
+        chatLog.push({role: 'ai', text: rawText});
         appendMsg('ai', formattedText);
       }
     });
