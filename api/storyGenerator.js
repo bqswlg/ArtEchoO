@@ -97,8 +97,8 @@ JSON 格式必須完全符合：
     }
   });
 
-  console.log(JSON.stringify(response.body, null, 2));
-
+  /*console.log(JSON.stringify(response.body, null, 2));
+*/
   if (isUnexpected(response)) {
     throw new Error(response.body.error?.message || "故事生成模型呼叫失敗");
   }

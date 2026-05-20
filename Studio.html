@@ -117,7 +117,7 @@
   </main>
 </div>
 
-<script src="js/Story.js"></script>
+<script type="module" src="js/Story.js"></script>
 <script type="module">
   import { AnalysisAPI } from './js/analysisAPI.js';
   import { GeminiService } from './js/geminiService.js';
@@ -131,7 +131,7 @@
 
   let drawing = false, isEraser = false, history = [], drawingSteps = [], currentStroke = null;
   let brushType = 'marker', isPlaying = false, currentStrokeIdx = 0, currentPointIdx = 0, animationId = null;
-  let chatLog = [], startTime = null, currentScenarioId = 'snow_white', currentChapterLevel = '1', currentScenarioTitle = '';
+  let chatLog = [], startTime = null, currentScenarioId = 'Family', currentChapterLevel = '1', currentScenarioTitle = '';
 
   let gridVisible = false;
   const GRID_STEP_DEFAULT = 24;

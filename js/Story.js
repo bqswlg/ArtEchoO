@@ -6,37 +6,37 @@ import { GeminiService } from "./geminiService.js";
 window.ArtEchoScenarios = [
   // --- 官方劇情 ---
   {
-    id: "snow_white",
+    id: "Family",
     category: "official",
-    title: "好久不見的家人",
+    title: "好久不見的親戚來到我家作客",
     description: "這是一個關於家人的故事，準備好了嗎？",
     image: "images/family.png",
     clickable: true,
     intro: {
       videoSrc: "video/open.mp4",
-      question: "好久不見的家人就在前面！你覺得他現在的心情是怎麼樣的呢？",
-      options: ["開心地抱抱", "有點生氣", "覺得很難過", "超級期待"]
+      question: "好久不見的親戚就在面前！見到他你的心情是怎麼樣的呢？",
+      options: ["覺得厭煩", "有點生氣", "覺得難過", "非常開心"]
     },
     chapters: {
       "1": {
         title: "第一章：好久不見的家人",
-        desc: "你終於見到好久不見的家人了！你現在的心情是怎麼樣的呢？把你的感覺畫下來吧！",
+        desc: "你終於見到好久不見的親戚了！你現在的心情是怎麼樣的呢？或是你們會有什麼樣的互動?把你的想法畫下來吧！",
         img: "images/family.png"
       },
       "2": {
         title: "第二章：分享美味的晚餐",
         desc: "大家圍坐在餐桌旁，吃著熱騰騰的飯菜，聊著分開時發生的趣事。畫出桌上你最想跟家人分享的那道菜吧！",
-        img: "images/family.png"
+        img: "images/meal.jpg"
       },
       "3": {
         title: "第三章：飯後的客廳時光",
-        desc: "吃飽後，大家一起坐在沙發上，客廳裡充滿了溫暖的燈光與笑聲。試著畫出你和家人一起看電視或聊天的溫馨畫面。",
-        img: "images/family.png"
+        desc: "吃飽後，大家一起坐在沙發上，客廳裡充滿了交談聲。試著畫出你和家人一起待在客廳相處的畫面。",
+        img: "images/room.jpg"
       },
       "4": {
         title: "第四章：暖心的晚安擁抱",
-        desc: "快樂的一天過去了，睡前家人給了你一個大大的擁抱，心裡覺得無比踏實。用溫暖的顏色，畫出這個充滿愛的擁抱吧。",
-        img: "images/family.png"
+        desc: "快樂的一天過去了，睡前家人給了你一個大大的擁抱。對於這個擁抱你的感覺是甚麼?畫出你的感受吧!",
+        img: "images/hug.jpg"
       }
     }
   },
