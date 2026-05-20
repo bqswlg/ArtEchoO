@@ -448,3 +448,40 @@ window.createNewScenario = function() {
 };
 
 document.addEventListener("DOMContentLoaded", window.renderScenarios);
+function saveGeneratedScenario(scenario) {
+  try {
+    // 撈出目前已經存下來的故事，如果沒有就初始化空陣列
+    const savedList = JSON.parse(localStorage.getItem("ArtEcho_Custom_Scenarios") || "[]");
+
+    // 把新生成的故事塞進去
+    savedList.push(scenario);
+
+    // 轉回字串存進 LocalStorage
+    localStorage.setItem("ArtEcho_Custom_Scenarios", JSON.stringify(savedList));
+    console.log(`🎉 故事「${scenario.title}」已成功永久保存至瀏覽器！`);
+  } catch (e) {
+    console.error("❌ 儲存故事至 LocalStorage 失敗:", e);
+  }
+}
+
+/**
+ * 網頁載入時，自動把之前存的故事撈出來，塞回畫面資料庫中
+ */
+function loadSavedScenarios() {
+  try {
+    const savedList = JSON.parse(localStorage.getItem("ArtEcho_Custom_Scenarios") || "[]");
+
+    // 將撈出來的故事逐一推進全域陣列中
+    savedList.forEach(scenario => {
+      // 防止重複推進陣列（雖然機率很低）
+      if (!window.ArtEchoScenarios.some(s => s.id === scenario.id)) {
+        window.ArtEchoScenarios.push(scenario);
+      }
+    });
+  } catch (e) {
+    console.error("❌ 讀取自訂故事失敗:", e);
+  }
+}
+
+// 💡 搶在網頁畫面渲染出來之前，先把硬碟裡的故事載入進來
+loadSavedScenarios();

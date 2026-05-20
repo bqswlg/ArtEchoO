@@ -525,29 +525,53 @@
   document.getElementById("aiGenDescBtn").onclick = async () => {
     const btn = document.getElementById("aiGenDescBtn");
     const originalText = btn.textContent;
+    const workDescInput = document.getElementById("workDescInput");
+
+    // 檢查是否有對話紀錄，如果沒有就給予貼心提示
+    if (!chatLog || chatLog.length === 0) {
+      alert("請先在『與 AI 聊聊心情』中留下對話，AI 才能根據對話為你量身打造簡介喔！");
+      return;
+    }
+
     btn.textContent = "生成中...";
     btn.disabled = true;
 
+    // 將先前的對話紀錄串接起來，作為 AI 的參考背景
     const conversation = chatLog.map(m => `${m.role === 'ai' ? 'AI' : '我'}: ${m.text}`).join('\n');
-    const genPrompt = `你是一位溫柔、平易近人的藝術治療師。根據以下對話摘要，為使用者的畫作寫一段溫暖(以使用者的第一人稱視角)、具備心理洞察力的簡介（約 50 字內，不要有標題）。\n\n對話內容：\n${conversation}`;
+
+    // 設定針對兒童/少年的溫柔引導提示詞
+    const genPrompt = `你是一位溫柔且平易近人的兒童藝術治療師。請根據以下使用者與 AI 的對話內容，以「使用者的第一人稱視角（例如：我畫了...）」寫一段溫暖、充滿心理洞察力的作品簡介。
+限制條件：字數嚴格控制在 30-50 字之內，不要有任何標題（例如：不要寫 簡介：）、直接輸出內容即可。
+
+對話內容：
+${conversation}`;
 
     try {
-      await GeminiService.call({
+      await GeminiService.callChat({
         systemPrompt: genPrompt,
-        userMessage: "請幫我寫簡介。",
-        chatHistory: [],
+        userMessage: "請根據我們的對話，幫我的畫作寫一段 30-50 字的第一人稱心情簡介。",
+        chatHistory: [], // 這裡留空，因為我們已經把脈絡塞進 systemPrompt 了
+        onLoading: (isLoading) => {
+          if (isLoading) {
+            btn.textContent = "🪄 AI 正在閱讀對話...";
+            workDescInput.placeholder = "AI 正在根據你的心情故事編寫簡介...";
+          } else {
+            btn.textContent = originalText;
+            btn.disabled = false;
+          }
+        },
         onSuccess: (formatted, raw) => {
-          document.getElementById("workDescInput").value = raw.trim();
-          btn.textContent = originalText;
-          btn.disabled = false;
+          // 將 AI 生成的純文字填入情緒簡介的 textarea 中
+          workDescInput.value = raw.trim();
         },
         onError: (err) => {
-          alert("生成失敗：" + err);
+          alert("魔法棒失效了，生成失敗：" + err);
           btn.textContent = originalText;
           btn.disabled = false;
         }
       });
     } catch (e) {
+      console.error("生成簡介發生異常:", e);
       btn.textContent = originalText;
       btn.disabled = false;
     }
