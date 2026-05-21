@@ -162,16 +162,12 @@ window.getChapterData = function(scenarioId, chapterLevel) {
   if (scenario && scenario.chapters) {
     let chapter = scenario.chapters[chapterLevel];
 
-    // 嚴格攔截：只有第一章會去讀取選項並動態修改文字
     if ((chapterLevel === "1" || chapterLevel === 1) && chapter) {
       const urlParams = new URLSearchParams(window.location.search);
       const choice = urlParams.get('choice');
 
       if (choice) {
-        // 淺拷貝一份物件，避免永久覆蓋掉全域資料庫的原始設定
         chapter = { ...chapter };
-
-        // 針對「久違的家人」客製化文字；其他劇本則將選項預設加在最前面
         if (scenarioId === "Family") {
           chapter.desc = `【你的選擇是：${choice}】的你認為你們會有怎麼樣的互動？把你的想法畫下來吧！`;
         } else {
@@ -179,8 +175,6 @@ window.getChapterData = function(scenarioId, chapterLevel) {
         }
       }
     }
-
-    // 如果找不到指定章節，再呼叫 fallback
     return chapter || (typeof getFallbackChapter !== 'undefined' ? getFallbackChapter(scenario, chapterLevel) : null);
   }
   return null;
@@ -190,9 +184,76 @@ window.getScenarioById = function(id) {
   return window.ArtEchoScenarios.find(s => s.id === id);
 };
 
+/* ==========================================================================
+   卡片列表上的編輯視窗 (保留給後續修改已存故事使用)
+   ========================================================================== */
+window.openEditModal = function(scenarioId) {
+  const scenario = window.ArtEchoScenarios.find(s => s.id === scenarioId);
+  if (!scenario) return;
+
+  const isShared = scenario.category === 'shared';
+  const statusText = isShared ? "目前狀態：社群共享 (公開)" : "目前狀態：個人雲端 (不公開)";
+  const toggleButtonText = isShared ? "設為個人私密" : "設為社群公開";
+  const toggleCategory = isShared ? "personal" : "shared";
+
+  const modal = document.createElement("div");
+  modal.innerHTML = `
+    <div class="video-modal" id="editModalOverlay" style="z-index: 1001; position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+      <div class="panel" style="max-width: 400px; width: 90%; background: #fffdf8; position: relative; padding: 30px; border-radius: 24px; border: 1px solid var(--line); box-shadow: 0 20px 40px rgba(0,0,0,0.3); text-align: center;">
+        <button class="close-edit-btn" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 24px; cursor: pointer; color: #888;">✖</button>
+        <h2 style="color: var(--moss); margin-bottom: 15px; font-size: 1.4rem; font-family: 'Noto Serif TC', serif;">管理專屬劇情</h2>
+        
+        <div style="background: rgba(0,0,0,0.03); padding: 15px; border-radius: 12px; margin-bottom: 25px;">
+            <p style="font-weight: bold; color: var(--terracotta); margin: 0 0 8px 0; font-size: 1.2rem;">${scenario.title}</p>
+            <p style="color: #666; font-size: 0.95rem; margin: 0;">${statusText}</p>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <button id="toggle-status-btn" class="cta-btn primary" style="padding: 14px; border-radius: 12px; background: var(--moss); color: white; border: none; font-weight: bold; cursor: pointer; font-size: 1.05rem; transition: 0.2s;">
+            ${toggleButtonText}
+          </button>
+          <button id="delete-scenario-btn" class="btn" style="background: #e74c3c; color: white; border: none; padding: 14px; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 1.05rem; transition: 0.2s;">
+            刪除劇情
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  // 關閉按鈕
+  modal.querySelector(".close-edit-btn").addEventListener("click", () => document.body.removeChild(modal));
+
+  // 切換公開/私密狀態
+  modal.querySelector("#toggle-status-btn").addEventListener("click", () => {
+    scenario.category = toggleCategory;
+
+    let savedList = JSON.parse(localStorage.getItem("ArtEcho_Custom_Scenarios") || "[]");
+    const index = savedList.findIndex(s => s.id === scenarioId);
+    if (index !== -1) savedList[index].category = toggleCategory;
+
+    localStorage.setItem("ArtEcho_Custom_Scenarios", JSON.stringify(savedList));
+    document.body.removeChild(modal);
+    window.renderScenarios(); // 重新渲染，卡片會自動跳到對應的區域
+  });
+
+  // 刪除劇情
+  modal.querySelector("#delete-scenario-btn").addEventListener("click", () => {
+    if (confirm("確定要刪除這個劇情嗎？刪除後無法恢復喔！")) {
+      let savedList = JSON.parse(localStorage.getItem("ArtEcho_Custom_Scenarios") || "[]");
+      savedList = savedList.filter(s => s.id !== scenarioId);
+      localStorage.setItem("ArtEcho_Custom_Scenarios", JSON.stringify(savedList));
+
+      window.ArtEchoScenarios = window.ArtEchoScenarios.filter(s => s.id !== scenarioId);
+      document.body.removeChild(modal);
+      window.renderScenarios();
+    }
+  });
+};
 
 /* ==========================================================================
-   渲染畫面區 (支援動態切換：有圖片卡片 vs 純文字卡片)
+   渲染畫面區
    ========================================================================== */
 window.renderScenarios = function() {
   const officialGrid = document.getElementById("officialGrid");
@@ -205,7 +266,6 @@ window.renderScenarios = function() {
   myGrid.innerHTML = "";
   sharedGrid.innerHTML = "";
 
-  // [+] 新建按鈕卡片
   const addCardHtml = `
     <article class="scenario-card" style="display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; background: rgba(255, 255, 255, 0.6); border: 2px dashed #cdb48a; min-height: 250px; transition: 0.3s; margin: 0;" onclick="createNewScenario()" onmouseover="this.style.background='#fff'; this.style.borderColor='var(--moss)';" onmouseout="this.style.background='rgba(255, 255, 255, 0.6)'; this.style.borderColor='#cdb48a';">
       <div style="font-size: 3.8rem; color: #c66b3d; line-height: 1; margin-bottom: 6px;">+</div>
@@ -215,15 +275,23 @@ window.renderScenarios = function() {
   `;
   myGrid.innerHTML += addCardHtml;
 
-
-  // 派發資料庫中的卡片
   window.ArtEchoScenarios.forEach(function(scenario) {
     const card = document.createElement("article");
     card.className = "scenario-card";
+    card.style.position = "relative";
     if (!scenario.clickable) card.classList.add("locked");
 
-    // 判斷是否有圖片，決定渲染「有圖版」還是「無圖版純文字卡片」
     const hasImage = !!scenario.image;
+    const isCustom = scenario.id.startsWith('ai-generated-');
+
+    const editBtnHtml = isCustom ? `
+      <button class="edit-scenario-btn" style="position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.95); border: 1px solid #eaeaea; border-radius: 50%; width: 34px; height: 34px; cursor: pointer; z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; align-items: center; justify-content: center; color: #777; transition: all 0.2s ease;" title="管理劇情" onmouseover="this.style.color='var(--moss)'; this.style.transform='scale(1.05)';" onmouseout="this.style.color='#777'; this.style.transform='scale(1)';">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m9.06 11.9 8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08"></path>
+          <path d="M7.07 14.94c-1.66 0-3 1.35-3 3.02 0 1.33-2.5 1.52-2 2.02 1.08 1.35 2.49 2.02 4 2.02 2.2 0 4-1.8 4-4.04a3.01 3.01 0 0 0-3-3.02z"></path>
+        </svg>
+      </button>
+    ` : '';
 
     const imgHtml = hasImage ? `
       <div class="scenario-card-img">
@@ -232,10 +300,10 @@ window.renderScenarios = function() {
       </div>
     ` : '';
 
-    // 如果沒有圖片但又被上鎖，要把鎖頭放在文字區域內
     const lockHtml = (!hasImage && !scenario.clickable) ? '<div style="font-size: 2rem; text-align: center; margin-bottom: 10px;">🔒</div>' : '';
 
     const contentHtml = `
+      ${editBtnHtml}
       ${imgHtml}
       <div class="scenario-card-content" ${!hasImage ? 'style="padding: 24px; min-height: 250px; display: flex; flex-direction: column; justify-content: center;"' : ''}>
         ${lockHtml}
@@ -248,12 +316,17 @@ window.renderScenarios = function() {
       const link = document.createElement("a");
       link.href = `Studio.html?scenario=${encodeURIComponent(scenario.id)}&chapter=1`;
       link.className = "scenario-link";
-      // 讓卡片整塊可點，但避免純文字卡片高度塌陷
       link.style.display = "block";
       link.style.height = "100%";
       link.innerHTML = contentHtml;
 
       link.addEventListener("click", function (event) {
+        if (event.target.closest('.edit-scenario-btn')) {
+          event.preventDefault();
+          window.openEditModal(scenario.id);
+          return;
+        }
+
         event.preventDefault();
         const targetUrl = `Studio.html?scenario=${scenario.id}&chapter=1`;
 
@@ -274,14 +347,7 @@ window.renderScenarios = function() {
           <div class="video-modal" id="videoModalOverlay" style="position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000;">
             <div class="video-container" style="position: relative; background: ${hasVideo ? 'transparent' : '#fffdf8'}; padding: ${hasVideo ? '0' : '35px'}; border-radius: 20px; max-width: ${hasVideo ? '800px' : '480px'}; width: 90%; border: ${hasVideo ? 'none' : '1px solid var(--line)'}; box-shadow: ${hasVideo ? 'none' : '0 20px 40px rgba(0,0,0,0.3)'};">
                 <button class="close-btn" style="position: absolute; top: -15px; right: -15px; background: #fff; border: 2px solid #ccc; border-radius: 50%; width: 35px; height: 35px; font-size: 20px; cursor: pointer; z-index: 10;">✖</button>
-                
-                ${hasVideo ? `
-                <video id="introVideo" autoplay playsinline style="width: 100%; border-radius: 8px; transition: filter 0.5s; display: block;">
-                    <source src="${scenario.intro.videoSrc}" type="video/mp4">
-                    您的瀏覽器不支援影片播放。
-                </video>
-                ` : ''}
-                
+                ${hasVideo ? `<video id="introVideo" autoplay playsinline style="width: 100%; border-radius: 8px; transition: filter 0.5s; display: block;"><source src="${scenario.intro.videoSrc}" type="video/mp4">您的瀏覽器不支援影片播放。</video>` : ''}
                 <div class="options-overlay" style="display: ${hasVideo ? 'none' : 'flex'}; position: ${hasVideo ? 'absolute' : 'relative'}; top: 0; left: 0; width: 100%; height: 100%; justify-content: center; align-items: center; background: ${hasVideo ? 'rgba(0,0,0,0.5)' : 'transparent'}; border-radius: 8px;">
                     <div class="options-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; width: 100%; text-align: center;">
                         <strong style="grid-column: 1 / -1; font-size: 1.25rem; color: ${hasVideo ? '#fff' : 'var(--ink)'}; margin-bottom: 12px; text-shadow: ${hasVideo ? '0 2px 4px rgba(0,0,0,0.8)' : 'none'}; font-family: 'Noto Serif TC', serif; line-height: 1.5;">${scenario.intro.question}</strong>
@@ -295,14 +361,12 @@ window.renderScenarios = function() {
         const modal = document.createElement("div");
         modal.innerHTML = modalHtml;
         document.body.appendChild(modal);
-
         modal.querySelector(".close-btn").addEventListener("click", () => document.body.removeChild(modal));
 
         if (hasVideo) {
           const video = modal.querySelector("#introVideo");
           const optionsOverlay = modal.querySelector(".options-overlay");
           video.oncontextmenu = (e) => e.preventDefault();
-
           video.addEventListener("ended", function () {
             video.style.filter = "brightness(0.3)";
             optionsOverlay.style.display = "flex";
@@ -330,11 +394,14 @@ window.renderScenarios = function() {
   });
 };
 
+/* ==========================================================================
+   AI 產生與結果編輯核心區塊（已將編輯功能完美融入結果介面）
+   ========================================================================== */
 window.createNewScenario = function() {
   const modal = document.createElement("div");
   modal.innerHTML = `
     <div class="video-modal" id="aiGeneratorModal" style="z-index: 1000; position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
-      <div class="panel" style="max-width: 560px; width: 92%; background: #fffdf8; position: relative; padding: 30px; border-radius: 24px; border: 1px solid var(--line); box-shadow: 0 20px 40px rgba(0,0,0,0.3); margin: 0; max-height: 90vh; overflow-y: auto;">
+      <div class="panel" style="max-width: 580px; width: 92%; background: #fffdf8; position: relative; padding: 30px; border-radius: 24px; border: 1px solid var(--line); box-shadow: 0 20px 40px rgba(0,0,0,0.3); margin: 0; max-height: 90vh; overflow-y: auto;">
         <button class="close-btn" style="position: absolute; top: 18px; right: 18px; background: none; border: none; font-size: 24px; cursor: pointer; color: #888;">x</button>
 
         <div id="ai-input-stage">
@@ -375,19 +442,36 @@ window.createNewScenario = function() {
         </div>
 
         <div id="ai-loading-stage" style="display: none; text-align: center; padding: 45px 0;">
-          <div style="font-size: 3.5rem; animation: float 1.2s ease-in-out infinite; margin-bottom: 15px;">...</div>
+          <div style="font-size: 3.5rem; animation: float 1.2s ease-in-out infinite; margin-bottom: 15px;">✨</div>
           <h3 style="color: var(--moss); margin-bottom: 8px;">AI 正在編寫四章劇情</h3>
           <p style="color: #888; font-size: 0.88rem; margin: 0;">請稍等一下，故事正在成形。</p>
         </div>
 
         <div id="ai-result-stage" style="display: none;">
-          <h2 style="color: #c66b3d; margin-bottom: 14px; font-size: 1.3rem; font-family: 'Noto Serif TC', serif;">故事生成完成</h2>
-          <div style="background: rgba(47,93,79,0.05); padding: 18px; border-radius: 14px; border-left: 4px solid var(--moss); margin-bottom: 18px;">
-            <h3 id="res-title" style="font-size: 1.1rem; margin: 0 0 8px 0; color: var(--ink);"></h3>
-            <p id="res-desc" style="font-size: 0.9rem; color: #5a6b6a; line-height: 1.6; margin: 0;"></p>
+          <h2 style="color: #c66b3d; margin-bottom: 14px; font-size: 1.3rem; font-family: 'Noto Serif TC', serif;">✨ 故事生成完成（可直接修改）</h2>
+          
+          <div class="control-group" style="margin-bottom: 12px;">
+            <label style="font-weight: bold; display: block; margin-bottom: 4px; font-size: 0.9rem;">故事標題</label>
+            <input type="text" id="res-title-input" class="editable-input" style="width: 100%; padding: 8px; background: #fff;">
           </div>
-          <ol id="res-chapters" style="color: #4f595f; font-size: 0.9rem; line-height: 1.7; padding-left: 20px; margin-bottom: 22px;"></ol>
-          <div style="display: flex; gap: 12px;">
+
+          <div class="control-group" style="margin-bottom: 12px;">
+            <label style="font-weight: bold; display: block; margin-bottom: 4px; font-size: 0.9rem;">故事簡介</label>
+            <textarea id="res-desc-input" class="editable-textarea" style="width: 100%; height: 60px; padding: 8px; resize: none; background: #fff;"></textarea>
+          </div>
+
+          <div class="control-group" style="margin-bottom: 16px;">
+            <label style="font-weight: bold; display: block; margin-bottom: 4px; font-size: 0.9rem;">作者顯示方式</label>
+            <select id="res-author-type" class="editable-input" style="width: 100%; padding: 8px; background: #fff;">
+              <option value="real">使用真實名稱（實名發布）</option>
+              <option value="anon">匿名發布（顯示：匿名小畫家）</option>
+            </select>
+          </div>
+
+          <h3 style="font-size: 1rem; color: var(--terracotta); margin-bottom: 10px; padding-top: 10px; border-top: 1px dashed var(--line);">章節內容調整</h3>
+          <div id="res-chapters-container" style="max-height: 240px; overflow-y: auto; padding-right: 5px; margin-bottom: 20px;"></div>
+
+          <div style="display: flex; gap: 12px; margin-top: 10px;">
             <button id="save-personal-btn" class="btn" style="flex: 1; padding: 12px; border-radius: 12px; font-weight: bold;">存在我的專屬劇情</button>
             <button id="save-shared-btn" class="cta-btn primary" style="flex: 1; padding: 12px; border-radius: 12px; justify-content: center; background: #c2693d; color: white; border: none; font-weight: bold; cursor: pointer;">分享到社群共享</button>
           </div>
@@ -418,21 +502,20 @@ window.createNewScenario = function() {
     reader.readAsDataURL(imageUploadInput.files[0]);
   });
 
-  const buildScenario = (category, story, imageUrl) => {
-    const isShared = category === "shared";
+  const buildScenario = (category, storyData, imageUrl) => {
     const chapterImage = imageUrl || "images/music.png";
     return {
       id: `ai-generated-${Date.now()}`,
       category,
-      title: isShared ? `${story.title} (匿名小畫家)` : story.title,
-      description: story.description,
+      title: storyData.title,
+      description: storyData.description,
       image: imageUrl,
       clickable: true,
       intro: {
-        question: story.intro.question,
-        options: story.intro.options
+        question: storyData.intro.question,
+        options: storyData.intro.options
       },
-      chapters: Object.fromEntries(Object.entries(story.chapters).map(([level, chapter]) => [
+      chapters: Object.fromEntries(Object.entries(storyData.chapters).map(([level, chapter]) => [
         level,
         {
           title: chapter.title,
@@ -464,37 +547,78 @@ window.createNewScenario = function() {
         });
       });
 
+      // 隱藏載入，切換至結果畫面
       loadingStage.style.display = "none";
       resultStage.style.display = "block";
-      modal.querySelector("#res-title").textContent = story.title;
-      modal.querySelector("#res-desc").textContent = story.description;
 
-      const chapterList = modal.querySelector("#res-chapters");
-      chapterList.innerHTML = "";
-      Object.values(story.chapters).forEach(chapter => {
-        const item = document.createElement("li");
-        const title = document.createElement("strong");
-        title.textContent = chapter.title;
-        item.appendChild(title);
-        item.appendChild(document.createTextNode(`：${chapter.desc}`));
-        chapterList.appendChild(item);
+      // 1. 將基本資料填入可編輯的 Input 框中
+      modal.querySelector("#res-title-input").value = story.title;
+      modal.querySelector("#res-desc-input").value = story.description;
+
+      // 2. 動態在結果畫面渲染出 4 個章節的獨立修改區塊
+      const chaptersContainer = modal.querySelector("#res-chapters-container");
+      chaptersContainer.innerHTML = "";
+      Object.entries(story.chapters).forEach(([level, chapter]) => {
+        const chHtml = `
+          <div style="background: rgba(0,0,0,0.02); padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid rgba(0,0,0,0.04);">
+            <label style="font-weight: bold; font-size: 0.85rem; color: var(--moss); display:block; margin-bottom:3px;">第 ${level} 章標題</label>
+            <input type="text" id="res-ch${level}-title" class="editable-input" style="width: 100%; padding: 6px; margin-bottom: 6px; background: #fff;" value="${chapter.title}">
+            <label style="font-weight: bold; font-size: 0.85rem; color: var(--moss); display:block; margin-bottom:3px;">第 ${level} 章引導描述</label>
+            <textarea id="res-ch${level}-desc" class="editable-textarea" style="width: 100%; height: 45px; padding: 6px; resize: none; background: #fff;">${chapter.desc}</textarea>
+          </div>
+        `;
+        const div = document.createElement("div");
+        div.innerHTML = chHtml;
+        chaptersContainer.appendChild(div.firstElementChild);
       });
 
+      // 3. 封裝一個讀取「當前畫面上所有修改後數值」的整合函式
+      const getFinalEditedData = () => {
+        const titleBase = modal.querySelector("#res-title-input").value.trim();
+        const authorType = modal.querySelector("#res-author-type").value;
+        // 如果選匿名，自動在標題加上後綴
+        const finalTitle = authorType === 'anon' ? `${titleBase} (匿名小畫家)` : titleBase;
+
+        const currentData = {
+          title: finalTitle,
+          description: modal.querySelector("#res-desc-input").value.trim(),
+          intro: {
+            question: story.intro.question,
+            options: story.intro.options
+          },
+          chapters: {}
+        };
+
+        [1, 2, 3, 4].forEach(level => {
+          currentData.chapters[level] = {
+            title: modal.querySelector(`#res-ch${level}-title`).value.trim(),
+            desc: modal.querySelector(`#res-ch${level}-desc`).value.trim()
+          };
+        });
+
+        return currentData;
+      };
+
+      // 4. 綁定「儲存至個人雲端」事件 (讀取最新修改值)
       modal.querySelector("#save-personal-btn").onclick = function() {
-        const scenario = buildScenario("personal", story, imageUrl);
+        const finalStoryData = getFinalEditedData();
+        const scenario = buildScenario("personal", finalStoryData, imageUrl);
         window.ArtEchoScenarios.push(scenario);
         saveGeneratedScenario(scenario);
         document.body.removeChild(modal);
         window.renderScenarios();
       };
 
+      // 5. 綁定「分享到社群共享」事件 (讀取最新修改值)
       modal.querySelector("#save-shared-btn").onclick = function() {
-        const scenario = buildScenario("shared", story, imageUrl);
+        const finalStoryData = getFinalEditedData();
+        const scenario = buildScenario("shared", finalStoryData, imageUrl);
         window.ArtEchoScenarios.push(scenario);
         saveGeneratedScenario(scenario);
         document.body.removeChild(modal);
         window.renderScenarios();
       };
+
     } catch (err) {
       loadingStage.style.display = "none";
       inputStage.style.display = "block";
@@ -505,32 +629,21 @@ window.createNewScenario = function() {
 };
 
 document.addEventListener("DOMContentLoaded", window.renderScenarios);
+
 function saveGeneratedScenario(scenario) {
   try {
-    // 撈出目前已經存下來的故事，如果沒有就初始化空陣列
     const savedList = JSON.parse(localStorage.getItem("ArtEcho_Custom_Scenarios") || "[]");
-
-    // 把新生成的故事塞進去
     savedList.push(scenario);
-
-    // 轉回字串存進 LocalStorage
     localStorage.setItem("ArtEcho_Custom_Scenarios", JSON.stringify(savedList));
-    console.log(`🎉 故事「${scenario.title}」已成功永久保存至瀏覽器！`);
   } catch (e) {
     console.error("❌ 儲存故事至 LocalStorage 失敗:", e);
   }
 }
 
-/**
- * 網頁載入時，自動把之前存的故事撈出來，塞回畫面資料庫中
- */
 function loadSavedScenarios() {
   try {
     const savedList = JSON.parse(localStorage.getItem("ArtEcho_Custom_Scenarios") || "[]");
-
-    // 將撈出來的故事逐一推進全域陣列中
     savedList.forEach(scenario => {
-      // 防止重複推進陣列（雖然機率很低）
       if (!window.ArtEchoScenarios.some(s => s.id === scenario.id)) {
         window.ArtEchoScenarios.push(scenario);
       }
@@ -540,5 +653,4 @@ function loadSavedScenarios() {
   }
 }
 
-// 💡 搶在網頁畫面渲染出來之前，先把硬碟裡的故事載入進來
 loadSavedScenarios();
