@@ -56,7 +56,7 @@ window.ArtEchoScenarios = [
       "1": {
         title: "第一章：神秘的藏寶圖",
         desc: "地圖裡面又畫了些甚麼?",
-        img: "images/map.png"
+        img: "images/map.jpg"
       },
       "2": {
         title: "第二章：突破障礙",

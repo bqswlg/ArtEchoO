@@ -64,13 +64,15 @@ body {
 /* 右側插圖設定 */
 .banner-illustration {
     display: block;
-    height: 280px; /* 根據您的圖片高度可以稍微調整 */
-    width: 50%; /* 讓圖片佔據右半邊 */
-    object-fit: cover; /* 讓圖片填滿它的空間 */
-    object-position: right center; /* 強制圖片靠右對齊 */
-
-    /* 🔥 魔法在這裡：使用 mask-image 讓圖片只有「左邊緣」呈現透明漸層 */
+    height: 280px;
+    width: 50%;
+    object-fit: cover;
+    object-position: right bottom;
     mask-image: linear-gradient(to right, transparent 0%, black 20%);
+
+    /* 🔥 突破外層限制的對齊魔法 🔥 */
+    align-self: flex-end; /* 無視外層的垂直置中，強制把這張圖對齊到底部 */
+    margin-bottom: -40px; /* 抵銷外層 padding-bottom 的 40px 空白，讓圖完美貼齊邊框 */
 }
 
 /* --- 手機版 RWD 調整 --- */
