@@ -203,9 +203,21 @@
     return [{ type: 'freeform', label: '🌊 自由風格' }];
   }
 
-  function formatDisplayTitle(storyId) {
-    if (!storyId) return "未知主題";
-    return storyNames[storyId] || storyId;
+  function formatDisplayTitle(storyId, fallbackWorkTitle) {
+    if (!storyId) return fallbackWorkTitle || "未知主題";
+
+    // A. 如果是預設故事，直接從字典拿
+    if (storyNames[storyId]) return storyNames[storyId];
+
+    // B. 如果是 AI 生成的自訂故事，去 LocalStorage 找真正的中文標題
+    try {
+      const customScenarios = JSON.parse(localStorage.getItem("ArtEcho_Custom_Scenarios") || "[]");
+      const found = customScenarios.find(s => s.id === storyId);
+      if (found && found.title) return found.title;
+    } catch (err) {}
+
+    // C. 如果都找不到，使用存檔時的標題，最後才顯示 ID
+    return fallbackWorkTitle || storyId;
   }
 
   function renderFolders() {
