@@ -14,7 +14,8 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://127.0.0.1:3000',
   'http://localhost:63342',
-  'http://127.0.0.1:63342'
+  'http://127.0.0.1:63342',
+  'https://art-echo-o-8ral.vercel.app/'
 ];
 
 app.use(cors({
@@ -112,5 +113,10 @@ app.post('/api/story', async (req, res) => {
 });
 
 // 啟動伺服器
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => console.log(`🚀 API 伺服器已啟動: http://localhost:${PORT}`));
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 3001;
+  app.listen(PORT, () => console.log(`🚀 API 伺服器已啟動: http://localhost:${PORT}`));
+}
+
+// 這是 Vercel Serverless Functions 必須的匯出
+export default app;
