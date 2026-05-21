@@ -45,6 +45,12 @@ app.post('/api/login', (req, res) => {
   return res.json({ ok: true, message: '登入成功' });
 });
 
-app.listen(PORT, () => {
-  console.log(`Auth server listening on http://localhost:${PORT}`);
-});
+// 如果是在本地端執行，才啟動 listen
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`Auth server listening on http://localhost:${PORT}`);
+  });
+}
+
+// 將 express app 匯出，讓 Vercel Serverless Function 接管
+module.exports = app;
