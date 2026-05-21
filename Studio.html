@@ -440,7 +440,7 @@
     if (chatLog.length === 0) {
       // 第一輪開場
       dynamicRule = "請執行：先邀請使用者說說自己對於畫作的想法。";
-    } else if (totalCharCount >= 300) {
+    } else if (totalCharCount >= 125) {
       // 字數達標，強制收尾
       dynamicRule = "【重要：對話結束指令】對話字數與深度已足夠。請給一句溫和總結並明確請使用者點擊下方按鈕結束對話，絕對禁止再提出任何問號、反問或新問題。";
     } else {
