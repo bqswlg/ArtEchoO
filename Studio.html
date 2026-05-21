@@ -433,13 +433,13 @@
     const dataContext = `填滿率${stats.coverage}%，壓力${stats.avgPressure}，冷/暖色${stats.coolRatio}%/${stats.warmRatio}%，猶豫度${stats.hesitationRatio}%`;
 
     // 新版 Prompt：加入多維度數據、嚴格禁止稱讚、引導結束機制與 40 字限制
-    const prompt = `你是藝術心理導師。情境：${scenarioTitle}。數據：${dataContext}。
+    const prompt = `你是兒童繪畫藝術心理導師。情境：${scenarioTitle}。數據：${dataContext}。
 規則：
 1. 絕對禁止稱讚、貶低。
 2. 請使用者先說說自己對於畫作的想法。
 3. 挑選一項最特別的數據（如高猶豫、偏冷色或重壓力），提出一個蘇格拉底式深度反問引導自我覺察。
-4. 若對話已達結論或已完成五次來回對答時，請給一句溫和總結並請使用者結束對話。
-5. 嚴格限制回覆在 40 字以內。`;
+4. 已完成五次來回對答時，請給一句溫和總結並請使用者結束對話。
+5. 確保語句通順符合邏輯，讓8歲小孩也能夠聽得懂，嚴格限制回覆在 40 字以內。`;
 
     await GeminiService.callChat({
       systemPrompt: prompt,
