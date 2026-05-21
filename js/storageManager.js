@@ -57,7 +57,7 @@ export const StorageManager = {
         works.push(newWork);
 
         // 限制儲存數量，避免空間炸掉 (保留最近 30 張)
-        localStorage.setItem(this.DB_KEY, JSON.stringify(works.slice(-10)));
+        localStorage.setItem(this.DB_KEY, JSON.stringify(works.slice(-100)));
 
         // 紀錄最後進度
         if (level !== undefined && level !== null && level !== "") {

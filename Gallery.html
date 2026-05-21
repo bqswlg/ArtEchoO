@@ -164,7 +164,11 @@
 
   const storyNames = {
     snow_white: "公主的等待",
-    cinderella: "仙度瑞拉的眼淚"
+    cinderella: "仙度瑞拉的眼淚",
+    Family: "久違的家人",
+    forest: "森林裡的寶藏",
+    "my-dream-01": "昨晚的神祕夢境",
+    "shared-01": "星空下的散步"
   };
 
   const chapterTitles = {
@@ -257,7 +261,8 @@
       info.className = "folder-info";
 
       const h3 = document.createElement("h3");
-      const displayTitle = formatDisplayTitle(storyId);
+      const workTitle = groupWorks[0].storyTitle || groupWorks[0].scenarioTitle;
+      const displayTitle = formatDisplayTitle(storyId, workTitle);
 
       if (groupNum > 1) {
         h3.textContent = `${displayTitle}(${groupNum - 1})`;
@@ -432,8 +437,9 @@
     const m = groupKey.match(/^(.+?)\s*\(\d+\)$/);
     if (m) base = m[1];
 
-    let headerTitle = base;
-    if (!headerTitle || headerTitle === '') headerTitle = storyNames[base] || base;
+    // 利用升級版的翻譯函式取得完美的中文標題
+    const workTitle = storyWorks[0].storyTitle || storyWorks[0].scenarioTitle;
+    let headerTitle = formatDisplayTitle(base, workTitle);
 
     document.getElementById("detailTitle").textContent = headerTitle;
     const levels = [...new Set(storyWorks.map(w => w.level))];
