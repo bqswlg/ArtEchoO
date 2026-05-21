@@ -1,7 +1,7 @@
 :root {
   --paper: #f6efe3;
   --ink: #1a2229;
-  --moss: #2f5d4f;
+  --moss: rgba(47, 93, 79, 0.75);
   --terracotta: #c66b3d;
   --sand: #e8d6b5;
   --mist: #f9f3ea;

@@ -56,28 +56,28 @@ window.ArtEchoScenarios = [
     category: "personal",
     title: "昨晚的神祕夢境",
     description: "這是 AI 根據你的夢境變出來的深海探險故事，一起看看海底有什麼神秘生物吧！",
-    image: null, // 設定為 null，畫面上就會變成純文字排版
+    image: "images/sea.jpg", // 設定為 null，畫面上就會變成純文字排版
     clickable: true,
     chapters: {
       "1": {
         title: "第一章：潛入深海",
-        desc: "感覺水越來越深，光線也慢慢變暗了，請畫出你心中的那片深藍色。",
-        img: "images/music.png"
+        desc: "感覺水越來越深，光線也慢慢變暗了，請畫出你心中深海的景象(例如：魚群、珊瑚、漩渦)。",
+        img: "images/sea.jpg"
       },
       "2": {
         title: "第二章：發光的發光生物",
         desc: "周圍出現了好多亮晶晶的水母和魚群！試著用亮麗的顏色，畫出在黑暗中為你引路的小生物吧。",
-        img: "images/music.png"
+        img: "images/Fish.jpg"
       },
       "3": {
         title: "第三章：失落的水底遺蹟",
         desc: "前方隱約出現了一座古老神秘的建築物殘骸。發揮你的想像力，把這座沉睡在海底的城堡畫出來。",
-        img: "images/music.png"
+        img: "images/castle.jpg"
       },
       "4": {
         title: "第四章：重見天日的寶藏",
         desc: "在遺蹟的深處，你發現了一個閃閃發光的寶箱！快用金色或你最喜歡的色彩，畫出寶箱裡裝著的神秘禮物。",
-        img: "images/music.png"
+        img: "images/treasure.jpg"
       }
     }
   },
@@ -86,34 +86,34 @@ window.ArtEchoScenarios = [
   {
     id: "shared-01",
     category: "shared",
-    title: "星空下的散步 (小美分享)",
+    title: "星空下的散步",
     description: "大家都很喜歡的星空故事，一起去看看滿天的星星，感受一下平靜的心情吧！",
-    image: "images/grandandog.png",
+    image: "images/star.jpeg",
     clickable: true,
     intro: {
       question: "走在看星星的路上，你現在心裡感覺怎麼樣？",
-      options: ["超開心、很期待", "有點緊張", "覺得很平靜"]
+      options: ["非常開心","覺得孤單", "感到緊張", "覺得平靜"]
     },
     chapters: {
       "1": {
         title: "第一章：看星星的路上",
-        desc: "心跳好像變快了，周圍的風景感覺好特別，遠處的樹影在微風中輕輕搖曳。",
-        img: "images/grandandog.png"
+        desc: "周圍的風景感覺好特別，遠處的樹影在微風中輕輕搖曳，試著畫出腦袋中的影像吧!",
+        img: "images/star.jpeg"
       },
       "2": {
         title: "第二章：夜幕低垂的森林",
-        desc: "走進了密林之中，雖然有點黑，但腳邊有些不知名的發光植物正一閃一閃的，像是引路的精靈。",
-        img: "images/grandandog.png"
+        desc: "走進了密林之中，雖然有點黑，但腳邊有些不知名的發光植物正一閃一閃的，像是引路的精靈，畫出接下來的故事吧!",
+        img: "images/Firefly.jpg"
       },
       "3": {
-        title: "第三章：登上山頂的驚喜",
-        desc: "終於穿過了森林！當你抬起頭，視野豁然開朗，整片銀河就像一條發光的河流橫跨在夜空中。",
-        img: "images/grandandog.png"
+        title: "第三章：溪川旁的生物",
+        desc: "夜晚的溪川邊，傳來樹叢輕輕晃動的沙沙聲，還有溪水緩緩流動的呢喃。跟著聲音一起探索，畫出夜晚森林中的生命吧",
+        img: "images/creek.jpg"
       },
       "4": {
         title: "第四章：流星劃過的瞬間",
-        desc: "你找了一塊舒服的草地躺了下來。這時，一顆流星悄悄劃過天際，你趕緊閉上眼睛許下了心願。",
-        img: "images/grandandog.png"
+        desc: "你找了一塊舒服的草地躺了下來。這時，一顆流星悄悄劃過天際，你趕緊閉上眼睛許下了心願，畫下你此時的願望吧!",
+        img: "images/meteor.jpg"
       }
     }
   }

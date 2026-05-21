@@ -125,6 +125,16 @@ body {
     align-items: center;
 }
 
+/* Override for specific panels: use same border style as story-hero-banner */
+.panel.solid-border {
+    border: 2px solid #f0e6d3;      /* 與 .story-hero-banner 相同的實線顏色與寬度 */
+    border-radius: 32px;            /* 與 hero 保持一致圓角 */
+    box-shadow: 0 12px 24px -10px rgba(198, 107, 61, 0.08); /* 與 hero 的陰影感覺相近 */
+    background-color: #fcf9f2;      /* 若需要，可套用與 hero 相近的底色（可選） */
+    /* 取消原本 .panel 的虛線（直接覆蓋 border 屬性即可） */
+}
+
+
 /* ==========================================================================
    3. 繪本風故事卡片 (Scenario Card) - 拍立得/貼紙風格
    ========================================================================== */
@@ -269,4 +279,9 @@ article[onclick="createNewScenario()"]:hover {
     transform: translateY(-4px);
     box-shadow: 0 8px 16px rgba(229, 130, 82, 0.3);
     background-color: #f09568;
+}
+
+/* 只有在 detail view active 時才把 folder title 變白 */
+h2#detailTitle {
+    color: #ffffff !important;
 }
