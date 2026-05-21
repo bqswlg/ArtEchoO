@@ -1,0 +1,267 @@
+/* ==========================================================================
+   創作者空間專屬樣式 (Author Space)
+   ========================================================================== */
+
+/* 返回按鈕 */
+.back-link {
+    display: inline-block;
+    margin-bottom: 20px;
+    color: var(--moss);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.95rem;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+.back-link:hover {
+    color: var(--terracotta);
+    transform: translateX(-4px);
+}
+
+/* 頂部封面與個人檔案區 */
+.author-hero {
+    background: #ffffff;
+    border-radius: 32px;
+    border: 2px dashed #e4d5bc;
+    box-shadow: 0 16px 32px -16px rgba(198, 107, 61, 0.15);
+    overflow: hidden;
+    margin-bottom: 40px;
+    position: relative;
+}
+
+.author-cover {
+    height: 220px;
+    background: linear-gradient(135deg, #dcedc8, #f1f8e9);
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+.cover-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(255,255,255,0.8) 90%, #ffffff 100%);
+}
+
+.author-profile {
+    display: flex;
+    align-items: flex-start;
+    gap: 30px;
+    padding: 0 40px 40px 40px;
+    margin-top: -60px; /* 讓頭像往上推，與封面重疊 */
+    position: relative;
+    z-index: 2;
+}
+
+.author-avatar {
+    width: 130px;
+    height: 130px;
+    border: 6px solid #ffffff;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--moss), #5c8465);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.5rem;
+    font-family: 'Noto Serif TC', serif;
+    box-shadow: 0 10px 24px rgba(47, 93, 79, 0.2);
+    flex-shrink: 0;
+}
+
+.author-info {
+    margin-top: 60px; /* 避開重疊的頭像高度 */
+}
+
+.author-info h1 {
+    font-size: 2.2rem;
+    color: var(--ink);
+    margin: 0 0 8px 0;
+}
+
+.author-quote {
+    font-size: 1.05rem;
+    color: var(--slate);
+    font-style: italic;
+    margin: 0 0 16px 0;
+}
+
+.author-stats {
+    display: inline-flex;
+    gap: 16px;
+    background: #f9f6f1;
+    padding: 8px 20px;
+    border-radius: 999px;
+    border: 1px solid #e4d5bc;
+    font-size: 0.9rem;
+    color: var(--moss);
+    font-weight: 500;
+}
+
+/* 拍立得風格作品牆 */
+.author-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 28px;
+    margin-top: 20px;
+}
+
+.polaroid-card {
+    background: #ffffff;
+    padding: 14px 14px 24px 14px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    cursor: pointer;
+    border: 1px solid rgba(0,0,0,0.02);
+    /* 讓每張卡片有隨機的微小旋轉，營造手帳拼貼感 */
+}
+
+.polaroid-card:nth-child(even) { transform: rotate(1deg); }
+.polaroid-card:nth-child(odd) { transform: rotate(-1.5deg); }
+.polaroid-card:nth-child(3n) { transform: rotate(2deg); }
+
+.polaroid-card:hover {
+    transform: translateY(-10px) rotate(0deg) scale(1.02);
+    box-shadow: 0 16px 32px rgba(198, 107, 61, 0.12);
+    z-index: 10;
+}
+
+.polaroid-img-wrap {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    border-radius: 8px;
+    background: var(--mist);
+    margin-bottom: 16px;
+}
+
+.polaroid-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.polaroid-card:hover .polaroid-img-wrap img {
+    transform: scale(1.05);
+}
+
+.polaroid-info h4 {
+    margin: 0 0 6px 0;
+    color: var(--ink);
+    font-family: 'Noto Serif TC', serif;
+    font-size: 1.15rem;
+}
+
+.polaroid-info p {
+    margin: 0;
+    color: #7a8886;
+    font-size: 0.85rem;
+}
+
+/* 彈出視窗樣式 (承襲 cloud.css 質感) */
+.art-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(26, 34, 41, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.art-modal {
+    background: #fffdf8;
+    border-radius: 24px;
+    max-width: 850px;
+    width: 100%;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    display: flex;
+    gap: 24px;
+    padding: 30px;
+    position: relative;
+    border: 2px dashed #e4d5bc;
+}
+
+.art-modal img {
+    width: 45%;
+    border-radius: 16px;
+    object-fit: cover;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+
+.art-modal-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.art-modal-body h3 {
+    font-size: 1.8rem;
+    color: var(--moss);
+    margin: 0 0 12px 0;
+    font-family: 'Noto Serif TC', serif;
+}
+
+.art-modal-body .author {
+    font-size: 1rem;
+    color: var(--terracotta);
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+
+.art-modal-body .desc {
+    color: #4f5b59;
+    line-height: 1.7;
+    font-size: 1.05rem;
+    background: #f9f6f1;
+    padding: 16px;
+    border-radius: 12px;
+    border-left: 4px solid var(--terracotta);
+}
+
+.level-badge {
+    margin-top: 16px;
+    display: inline-block;
+    background: #eaf0ec;
+    color: var(--moss);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: bold;
+}
+
+.art-modal-close {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    background: #fff1e6;
+    color: var(--terracotta);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.art-modal-close:hover {
+    background: var(--terracotta);
+    color: #fff;
+    transform: rotate(90deg) scale(1.1);
+}
+
+@media (max-width: 768px) {
+    .author-profile { flex-direction: column; align-items: center; text-align: center; margin-top: -65px; gap: 16px; padding: 0 20px 30px; }
+    .author-info { margin-top: 10px; }
+    .art-modal { flex-direction: column; padding: 20px; }
+    .art-modal img { width: 100%; max-height: 35vh; }
+}
