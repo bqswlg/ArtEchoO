@@ -8,7 +8,7 @@ window.ArtEchoScenarios = [
   {
     id: "Family",
     category: "official",
-    title: "好久不見的親戚來到我家作客",
+    title: "久違的家人",
     description: "這是一個關於家人的故事，準備好了嗎？",
     image: "images/family.png",
     clickable: true,
@@ -37,6 +37,41 @@ window.ArtEchoScenarios = [
         title: "第四章：暖心的晚安擁抱",
         desc: "快樂的一天過去了，睡前家人給了你一個大大的擁抱。對於這個擁抱你的感覺是甚麼?畫出你的感受吧!",
         img: "images/hug.jpg"
+      }
+    }
+  },
+  {
+    id: "forest",
+    category: "official",
+    title: "森林裡的寶藏",
+    description: "這是一個在森林裡尋寶的故事，準備好了嗎？",
+    image: "images/forest.png",
+    clickable: true,
+    intro: {
+      videoSrc: "video/tresure.mp4",
+      question: "這是一個傳說中每個人都想得到的寶藏，你在哪裡發現寶藏地圖？",
+      options: ["古老的書櫃", "精密的儀器", "洞穴的古文", "精緻的鐵盒"]
+    },
+    chapters: {
+      "1": {
+        title: "第一章：神秘的藏寶圖",
+        desc: "地圖裡面又畫了些甚麼?",
+        img: "images/map.png"
+      },
+      "2": {
+        title: "第二章：突破障礙",
+        desc: "前進的道路突然被密密麻麻的黑色荊棘擋住，四周的空氣變得有些沉重。面對眼前的阻礙，你決定用什麼方式開闢出前進的通道？",
+        img: "images/plant.jpg"
+      },
+      "3": {
+        title: "第三章：寶藏揭曉",
+        desc: "傳說中的寶箱就靜靜置於樹根之間。當你緩緩打開寶箱，裡面沒有金銀財寶，只有一件散發著奇異光芒的物品——你看到了什麼？",
+        img: "images/forest.png"
+      },
+      "4": {
+        title: "第四章：寶藏的運用",
+        desc: "將這份珍貴的寶藏收進懷裡後，你踩著輕快的步伐離開森林。回程的路上你決定如何運用你得到的寶藏?",
+        img: "images/back.jpg"
       }
     }
   },
@@ -125,7 +160,28 @@ window.ArtEchoScenarios = [
 window.getChapterData = function(scenarioId, chapterLevel) {
   const scenario = window.ArtEchoScenarios.find(s => s.id === scenarioId);
   if (scenario && scenario.chapters) {
-    return scenario.chapters[chapterLevel] || getFallbackChapter(scenario, chapterLevel);
+    let chapter = scenario.chapters[chapterLevel];
+
+    // 嚴格攔截：只有第一章會去讀取選項並動態修改文字
+    if ((chapterLevel === "1" || chapterLevel === 1) && chapter) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const choice = urlParams.get('choice');
+
+      if (choice) {
+        // 淺拷貝一份物件，避免永久覆蓋掉全域資料庫的原始設定
+        chapter = { ...chapter };
+
+        // 針對「久違的家人」客製化文字；其他劇本則將選項預設加在最前面
+        if (scenarioId === "Family") {
+          chapter.desc = `【你的選擇是：${choice}】的你認為你們會有怎麼樣的互動？把你的想法畫下來吧！`;
+        } else {
+          chapter.desc = `【你的選擇是：${choice}】\n${chapter.desc}`;
+        }
+      }
+    }
+
+    // 如果找不到指定章節，再呼叫 fallback
+    return chapter || (typeof getFallbackChapter !== 'undefined' ? getFallbackChapter(scenario, chapterLevel) : null);
   }
   return null;
 };
@@ -208,7 +264,8 @@ window.renderScenarios = function() {
 
         let buttonsHtml = "";
         scenario.intro.options.forEach(opt => {
-          buttonsHtml += `<button class="option-btn" onclick="window.location.href='${targetUrl}'" style="font-size: 1rem; padding: 10px 20px; border-radius: 8px; background-color: #c57e21; color: #ffffff; border: none; cursor: pointer; transition: background-color 0.3s ease;">${opt}</button>`;
+          const optUrl = `${targetUrl}&choice=${encodeURIComponent(opt)}`;
+          buttonsHtml += `<button class="option-btn" onclick="window.location.href='${optUrl}'" style="font-size: 1rem; padding: 10px 20px; border-radius: 8px; background-color: #c57e21; color: #ffffff; border: none; cursor: pointer; transition: background-color 0.3s ease;">${opt}</button>`;
         });
 
         const hasVideo = !!scenario.intro.videoSrc;
