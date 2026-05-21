@@ -1615,6 +1615,33 @@ svg.hand-drawn {
   transform: none;
 }
 
+/*!* 只針對畫廊內的切換主題按鈕 *!*/
+/*.nav-btn.gallery-reset {*/
+/*  background: var(--primary);     !* 或用你想要的色碼，如 #00bcd4 *!*/
+/*  color: #ffffff;*/
+/*  border: none;                   !* 視需要保留/移除邊框 *!*/
+/*  padding: 8px 14px;*/
+/*  font-weight: 700;*/
+/*  border-radius: 12px;*/
+/*  transition: background-color 0.18s ease, transform 0.08s ease;*/
+/*}*/
+
+/*!* hover / focus / active states *!*/
+/*.nav-btn.gallery-reset:hover,*/
+/*.nav-btn.gallery-reset:focus {*/
+/*  background: color-mix(in srgb, var(--primary) 85%, black 15%); !* 若瀏覽器支援 *!*/
+/*  transform: translateY(-2px);*/
+/*  outline: none;*/
+/*}*/
+
+/*!* disabled 狀態（如果按鈕會被 disable） *!*/
+/*.nav-btn.gallery-reset:disabled {*/
+/*  opacity: 0.6;*/
+/*  cursor: not-allowed;*/
+/*  transform: none;*/
+/*}*/
+
+
 .delete-creature-btn {
   background: rgba(191, 52, 52, 0.78);
   border-color: rgba(255,255,255,0.45);
