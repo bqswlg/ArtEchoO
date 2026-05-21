@@ -15,7 +15,7 @@ const allowedOrigins = [
   'http://127.0.0.1:3000',
   'http://localhost:63342',
   'http://127.0.0.1:63342',
-  'https://art-echo-o-8ral.vercel.app/'
+  'https://art-echo-o-8ral.vercel.app'
 ];
 
 app.use(cors({
