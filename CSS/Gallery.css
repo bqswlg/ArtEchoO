@@ -15,3 +15,4 @@ body {
     background-image: none !important;    /* 如果不想被底層小恐龍或背景圖透上來，可以加上這行 */
     box-shadow: 0 20px 40px rgba(110, 90, 70, 0.15) !important; /* 增強陰影讓厚紙板立體感更明顯 */
 }
+
