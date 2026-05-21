@@ -432,14 +432,28 @@
     // 彙整更多物理數據供 AI 參考
     const dataContext = `填滿率${stats.coverage}%，壓力${stats.avgPressure}，冷/暖色${stats.coolRatio}%/${stats.warmRatio}%，猶豫度${stats.hesitationRatio}%`;
 
-    // 新版 Prompt：加入多維度數據、嚴格禁止稱讚、引導結束機制與 40 字限制
+    // 1. 動態計算「目前雙方對話累積的總字數」（歷史紀錄字數 + 本次使用者輸入字數）
+    let totalCharCount = chatLog.reduce((sum, msg) => sum + msg.text.length, 0) + userInput.length;
+
+    // 2. 根據總字數與對話階段，動態指派核心引導規則
+    let dynamicRule = "";
+    if (chatLog.length === 0) {
+      // 第一輪開場
+      dynamicRule = "請執行：先邀請使用者說說自己對於畫作的想法。";
+    } else if (totalCharCount >= 300) {
+      // 字數達標，強制收尾
+      dynamicRule = "【重要：對話結束指令】對話字數與深度已足夠。請給一句溫和總結並明確請使用者點擊下方按鈕結束對話，絕對禁止再提出任何問號、反問或新問題。";
+    } else {
+      // 中間互動引導
+      dynamicRule = "請執行：挑選一項最特別的數據（如高猶豫、偏冷色或重壓力），提出一個蘇格拉底式深度反問引導自我覺察。";
+    }
+
+    // 3. 組合最終的新版 Prompt
     const prompt = `你是兒童繪畫藝術心理導師。情境：${scenarioTitle}。數據：${dataContext}。
 規則：
 1. 絕對禁止稱讚、貶低。
-2. 請使用者先說說自己對於畫作的想法。
-3. 挑選一項最特別的數據（如高猶豫、偏冷色或重壓力），提出一個蘇格拉底式深度反問引導自我覺察。
-4. 已完成五次來回對答時，請給一句溫和總結並請使用者結束對話。
-5. 確保語句通順符合邏輯，讓8歲小孩也能夠聽得懂，嚴格限制回覆在 40 字以內。`;
+2. ${dynamicRule}
+3. 確保語句通順符合邏輯，讓8歲小孩也能夠聽得懂，嚴格限制回覆在 40 字以內。`;
 
     await GeminiService.callChat({
       systemPrompt: prompt,
