@@ -51,7 +51,7 @@ header.site-header {
 
 .nav-wrap {
   border: 1px solid var(--line);
-  background: rgba(255, 251, 245, 0.82);
+  background: rgb(250, 246, 235);
   border-radius: 999px;
   box-shadow: 0 10px 24px -18px var(--shadow);
   display: flex;
@@ -62,14 +62,18 @@ header.site-header {
 }
 
 .brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-family: "Noto Serif TC", "Microsoft JhengHei", serif;
-  font-size: 1.08rem;
-  font-weight: 700;
-  letter-spacing: 0.5px;
+  display: inline-block;
+  width: 350px;   /* 增加寬度，請依據你版面的空間微調 */
+  height: 85px;   /* 增加高度，這會直接讓圖片的顯示比例變大 */
+  background-image: url('../images/through.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: left center;
+  text-indent: -9999px;
 }
+
+
+
 
 .brand-dot {
   width: 12px;
